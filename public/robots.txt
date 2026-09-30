@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /dashboard/
+Disallow: /api/privileged/
+
+Sitemap: https://winkbench.com/sitemap.xml
