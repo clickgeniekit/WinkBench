@@ -58,7 +58,7 @@ export default function ReviewGuidelinesPage() {
           WinkBench employs automated anomaly detection and a human Trust & Safety compliance team. When a review is flagged or disputed, the author may be prompted to provide neutral evidence of transaction (such as a redacted receipt, order confirmation, or service agreement).
         </p>
         <p>
-          Businesses cannot delete customer reviews on their own authority. If a dispute is filed, our neutral moderators review both parties' evidence before any action is taken.
+          Businesses cannot delete customer reviews on their own authority. If a dispute is filed, our neutral moderators review both parties&apos; evidence before any action is taken.
         </p>
       </div>
 

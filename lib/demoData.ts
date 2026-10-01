@@ -1,6 +1,6 @@
 import { Company, Category, Review, CommunityPost, CompanyUpdate } from '@/types';
 
-export const DEMO_NOTICE = "DEMO DATA MODE: WinkBench is currently presenting verified test records for Phase 1 preview. Real submissions will be powered by Cloud Firestore upon database connection.";
+export const DEMO_NOTICE = "DEMO DATA MODE: WinkBench is currently presenting test records in preview mode. Live submissions will connect to Hostinger MySQL upon database configuration.";
 
 export const DEMO_CATEGORIES: Category[] = [
   {

@@ -254,7 +254,7 @@ export default function UserDashboardPage() {
           <div className="p-3 bg-blue-50/70 border border-blue-200 rounded-xl space-y-1">
             <span className="font-bold text-blue-900 block">Company Reply Received</span>
             <p className="text-slate-600">
-              <strong>Aurora Payments Global</strong> replied to your review: <em>"Thank you Alex! Swift clearing is our highest priority."</em>
+              <strong>Aurora Payments Global</strong> replied to your review: <em>&ldquo;Thank you Alex! Swift clearing is our highest priority.&rdquo;</em>
             </p>
             <span className="text-[10px] text-slate-400 block pt-1">2 days ago</span>
           </div>

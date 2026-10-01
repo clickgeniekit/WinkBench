@@ -50,14 +50,31 @@ export default function RootLayout({
   };
 
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var _f = window.fetch;
+                  Object.defineProperty(window, 'fetch', {
+                    get: function() { return _f; },
+                    set: function(v) { _f = v; },
+                    configurable: true,
+                    enumerable: true
+                  });
+                } catch (e) {}
+              })();
+            `,
+          }}
+        />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
       </head>
-      <body className="bg-slate-50 text-navy-950 flex flex-col min-h-screen antialiased">
+      <body className="bg-slate-50 text-navy-950 flex flex-col min-h-screen antialiased" suppressHydrationWarning>
         <DemoBanner />
         <Navbar />
         <main className="flex-1">

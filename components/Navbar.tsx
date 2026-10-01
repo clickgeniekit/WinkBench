@@ -28,7 +28,7 @@ export default function Navbar() {
     if (!query) return;
 
     // Trustpilot-style direct domain check!
-    // If the user typed a URL or domain (e.g. https://vccshoppro.com, www.vccshoppro.com, vccshoppro.com)
+    // If the user typed a URL or domain (e.g. https://example.com, www.example.com, example.com)
     if (isDomainQuery(query) || query.includes('http://') || query.includes('https://') || query.includes('www.')) {
       const cleanDomain = normalizeDomain(query);
       router.push(`/company/${cleanDomain}`);
@@ -58,7 +58,7 @@ export default function Navbar() {
             <div className="relative w-full">
               <input
                 type="text"
-                placeholder="Search domain (e.g. vccshoppro.com) or business..."
+                placeholder="Search domain (e.g. example.com) or business..."
                 value={headerSearch}
                 onChange={(e) => setHeaderSearch(e.target.value)}
                 className="w-full pl-9 pr-4 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-colors shadow-2xs"
@@ -137,7 +137,7 @@ export default function Navbar() {
           <form onSubmit={handleSearchSubmit} className="relative">
             <input
               type="text"
-              placeholder="Search domain (e.g. vccshoppro.com)..."
+              placeholder="Search domain (e.g. example.com)..."
               value={headerSearch}
               onChange={(e) => setHeaderSearch(e.target.value)}
               className="w-full pl-9 pr-4 py-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl"

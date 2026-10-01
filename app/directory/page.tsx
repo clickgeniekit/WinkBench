@@ -154,7 +154,7 @@ function DirectoryContent() {
         <div className="relative">
           <input
             type="text"
-            placeholder="Search domain (e.g. vccshoppro.com), company name, or keywords..."
+            placeholder="Search domain (e.g. example.com), company name, or keywords..."
             value={searchQuery}
             onChange={(e) => {
               setSearchQuery(e.target.value);

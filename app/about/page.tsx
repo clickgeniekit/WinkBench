@@ -60,11 +60,11 @@ export default function AboutPage() {
           </li>
           <li className="flex items-start gap-2">
             <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-            <span><strong>Production Hosting Target:</strong> Hostinger VPS / Cloud Node.js runtime with zero vendor lock-in to proprietary cloud functions.</span>
+            <span><strong>Production Hosting Target:</strong> Hostinger Node.js runtime with zero vendor lock-in to proprietary cloud functions.</span>
           </li>
           <li className="flex items-start gap-2">
             <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-            <span><strong>Data Engine (Phase 2):</strong> Firebase Authentication and Cloud Firestore for enterprise-grade real-time security rules and role-based access control.</span>
+            <span><strong>Data Engine (Planned):</strong> Hostinger MySQL with Drizzle ORM for robust relational schema integrity, foreign keys, and role-based access control.</span>
           </li>
           <li className="flex items-start gap-2">
             <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />

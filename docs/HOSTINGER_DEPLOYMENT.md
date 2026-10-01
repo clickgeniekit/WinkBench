@@ -9,7 +9,7 @@ WinkBench is built to run 100% self-hosted on **Hostinger Cloud Hosting** or **H
 Per project instructions, **all Firebase dependencies have been completely removed**.
 - **Database Engine**: Persistent Local Storage Engine (`lib/storage/db.ts`) with JSON/SQLite file backing (`data/winkbench.json`).
 - **Data Portability**: Easily connectable to Hostinger MySQL or PostgreSQL via Prisma or standard PDO/ORM.
-- **Dynamic Domain Indexing (Trustpilot-Style)**: Any searched domain (e.g. `vccshoppro.com`, `www.vccshoppro.com`) automatically generates a permanent, indexed company profile ready for customer reviews.
+- **Dynamic Domain Indexing (Trustpilot-Style)**: Any searched domain (e.g. `example.com`, `www.example.com`) automatically generates a permanent, indexed company profile ready for customer reviews.
 
 ---
 
@@ -29,8 +29,8 @@ Per project instructions, **all Firebase dependencies have been completely remov
 
 1. **Official WinkBench Logo & Icon**: Integrated across desktop/mobile navigation, headers, and footer using the user's custom brand identity.
 2. **Dynamic Domain Auto-Creation**:
-   - `winkbench.com/company/vccshoppro.com`
-   - `winkbench.com/company/www.vccshoppro.com`
+   - `winkbench.com/company/example.com`
+   - `winkbench.com/company/www.example.com`
    - Automatic normalization, SEO canonical tags, and permanent persistence.
 3. **Dashboards**:
    - **Company Owner Dashboard** (`/dashboard/company`) with 4 required tabs:

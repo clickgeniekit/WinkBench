@@ -14,10 +14,10 @@ export default function DemoBanner() {
       <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
         <div className="flex items-center gap-2 overflow-hidden">
           <span className="bg-teal-500/20 text-teal-300 font-semibold px-2 py-0.5 rounded text-[10px] tracking-wide uppercase border border-teal-500/30 shrink-0">
-            Phase 1 Foundation
+            Preview Mode
           </span>
           <p className="truncate text-slate-300">
-            WinkBench Preview: Live UI, Directory, Profile Template & Responsive Design. Firebase Auth & Cloud Firestore will connect in Phase 2.
+            WinkBench Preview: Live UI, Directory & Profile Engine. Planned Hostinger MySQL persistence with Drizzle ORM.
           </p>
         </div>
 

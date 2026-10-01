@@ -9,7 +9,7 @@ WinkBench is an independent, uncompromised global review platform engineered fro
 - **Styling**: Tailwind CSS
 - **Icons**: Lucide React
 - **Target Production Host**: Hostinger (Cloud / KVM VPS with Node.js persistent runtime)
-- **Database & Auth (Phase 2)**: Cloud Firestore & Firebase Authentication (Existing user project `winkbench`)
+- **Database & Storage**: Hostinger MySQL with Drizzle ORM (schema & migrations in `drizzle/`)
 
 ## Getting Started
 
@@ -31,7 +31,5 @@ npm run start
 ```
 
 ## Documentation
-- [Database Schema (19 Collections)](docs/DATABASE_SCHEMA.md)
 - [Hostinger Deployment Guide](docs/HOSTINGER_DEPLOYMENT.md)
-- [Draft Firebase Security Rules](docs/SECURITY_RULES_DRAFT.md)
 - [Project Phases & Roadmap](docs/PHASE_STATUS.md)

@@ -107,7 +107,7 @@ export default function HomePage() {
                 <Search className="w-5 h-5 text-slate-400 absolute left-3.5" />
                 <input
                   type="text"
-                  placeholder="Enter domain (e.g. vccshoppro.com, www.sitename.com) or business..."
+                  placeholder="Enter domain (e.g. example.com, www.example.com) or business..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="w-full pl-10 pr-3 py-3 text-xs sm:text-sm rounded-xl focus:outline-none focus:bg-slate-50 text-slate-900 placeholder-slate-400 font-medium"
@@ -152,18 +152,18 @@ export default function HomePage() {
               <span className="font-semibold text-slate-400">Direct Domain Tryout:</span>
               <button 
                 type="button" 
-                onClick={() => router.push('/company/vccshoppro.com')}
+                onClick={() => router.push('/company/example.com')}
                 className="hover:text-blue-600 text-slate-700 font-mono font-medium underline underline-offset-2"
               >
-                vccshoppro.com
+                example.com
               </button>
               <span>·</span>
               <button 
                 type="button" 
-                onClick={() => router.push('/company/www.vccshoppro.com')}
+                onClick={() => router.push('/company/www.example.com')}
                 className="hover:text-blue-600 text-slate-700 font-mono font-medium underline underline-offset-2"
               >
-                www.vccshoppro.com
+                www.example.com
               </button>
               <span>·</span>
               <button 
@@ -350,7 +350,7 @@ export default function HomePage() {
                 Used a company or website recently?
               </h3>
               <p className="text-sm text-slate-300 leading-relaxed">
-                Post your honest review. Even if the website isn't listed yet, entering their domain creates a profile and alerts the company.
+                Post your honest review. Even if the website isn&apos;t listed yet, entering their domain creates a profile and alerts the company.
               </p>
             </div>
             <div className="pt-6">

@@ -79,8 +79,8 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/company/vccshoppro.com" className="hover:text-blue-400 transition-colors">
-                  Check Domain Profile (e.g. vccshoppro.com)
+                <Link href="/company/example.com" className="hover:text-blue-400 transition-colors">
+                  Check Domain Profile (e.g. example.com)
                 </Link>
               </li>
             </ul>

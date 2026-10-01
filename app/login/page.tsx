@@ -40,7 +40,7 @@ export default function LoginPage() {
         {loggedDemo && (
           <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-800 text-xs flex items-center gap-2">
             <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-            <span>Phase 1 Authentication Preview active. Redirecting...</span>
+            <span>Authentication Preview active. Redirecting...</span>
           </div>
         )}
 
@@ -88,7 +88,7 @@ export default function LoginPage() {
         </form>
 
         <div className="text-center text-xs text-slate-500 pt-2 border-t border-slate-100">
-          Don't have an account?{' '}
+          Don&apos;t have an account?{' '}
           <Link href="/register" className="text-teal-700 font-bold hover:underline">
             Join WinkBench free
           </Link>

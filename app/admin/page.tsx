@@ -29,12 +29,12 @@ export default function AdminDashboardPage() {
   const [claims, setClaims] = useState([
     {
       id: 'claim-101',
-      companyId: 'comp-vccshoppro',
-      companyName: 'vccshoppro.com',
-      applicantName: 'Fahim Ahmed',
-      workEmail: 'admin@vccshoppro.com',
+      companyId: 'comp-example-domain',
+      companyName: 'example.com',
+      applicantName: 'Jordan Miller',
+      workEmail: 'admin@example.com',
       roleInCompany: 'Founder & CEO',
-      phone: '+880 1712 345678',
+      phone: '+1 555 123 4567',
       docType: 'Corporate Domain Email Match',
       submittedAt: '2026-09-29T10:00:00Z',
       status: 'pending',

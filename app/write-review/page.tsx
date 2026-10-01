@@ -120,7 +120,7 @@ function WriteReviewContent() {
               Share Your Buying Experience
             </h1>
             <p className="text-xs sm:text-sm text-slate-600 mt-1">
-              You can review any company or website. If they aren't on WinkBench yet, typing their domain creates their profile automatically!
+              You can review any company or website. If they aren&apos;t on WinkBench yet, typing their domain creates their profile automatically!
             </p>
           </div>
 
@@ -140,7 +140,7 @@ function WriteReviewContent() {
               </label>
               <input
                 type="text"
-                placeholder="e.g. vccshoppro.com, www.sitename.com, or Aurora Payments"
+                placeholder="e.g. example.com, www.example.com, or Aurora Payments"
                 value={companyName}
                 onChange={(e) => setCompanyName(e.target.value)}
                 className="w-full text-xs sm:text-sm p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:bg-white focus:border-blue-600 font-medium"
