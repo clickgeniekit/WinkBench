@@ -2,62 +2,75 @@
 
 import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
-import { notFound, useParams } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import { 
   Building2, 
   MapPin, 
   Globe, 
   Phone, 
-  Mail, 
   CheckCircle, 
-  ShieldAlert, 
   Share2, 
   Flag, 
   PenSquare, 
-  Clock, 
   FileText, 
-  Sparkles,
+  Bell,
   ChevronRight,
   ExternalLink,
   MessageSquare,
-  AlertCircle
+  ShieldCheck,
+  Info
 } from 'lucide-react';
-import { DEMO_COMPANIES, DEMO_REVIEWS, DEMO_UPDATES } from '@/lib/demoData';
+import { createDefaultCompany } from '@/lib/storage/client';
+import { DEMO_REVIEWS, DEMO_UPDATES } from '@/lib/demoData';
 import StarRating from '@/components/StarRating';
 import TrustBadge from '@/components/TrustBadge';
 import ReviewCard from '@/components/ReviewCard';
+import { normalizeDomain } from '@/lib/utils/domain';
 
 export default function CompanyProfilePage() {
   const params = useParams();
   const slug = params?.slug as string;
 
-  const company = DEMO_COMPANIES.find((c) => c.slug === slug);
+  // Auto-creates or retrieves profile dynamically for ANY domain or slug (Trustpilot style!)
+  const company = useMemo(() => {
+    return createDefaultCompany(slug || 'winkbench.com');
+  }, [slug]);
+
+  const [activeTab, setActiveTab] = useState<'reviews' | 'announcements' | 'blog' | 'details'>('reviews');
   const [filterRating, setFilterRating] = useState<number | null>(null);
   const [copiedLink, setCopiedLink] = useState(false);
-  const [showReportModal, setShowReportModal] = useState(false);
-  const [reportedCompany, setReportedCompany] = useState(false);
 
-  if (!company) {
-    return (
-      <div className="max-w-2xl mx-auto py-20 px-4 text-center space-y-4">
-        <Building2 className="w-16 h-16 text-slate-300 mx-auto" />
-        <h1 className="text-2xl font-bold text-navy-950">Company Profile Not Found</h1>
-        <p className="text-sm text-slate-600">
-          The requested company profile does not exist or may have been relocated.
-        </p>
-        <Link
-          href="/directory"
-          className="inline-block px-5 py-2.5 bg-navy-900 text-white rounded-lg text-xs font-semibold hover:bg-navy-800"
-        >
-          Return to Directory
-        </Link>
-      </div>
-    );
-  }
+  // Reviews, announcements, and articles from storage / demo
+  const companyReviews = useMemo(() => {
+    const norm = normalizeDomain(company.slug);
+    return DEMO_REVIEWS.filter(r => r.companySlug === company.slug || normalizeDomain(r.companySlug) === norm);
+  }, [company.slug]);
 
-  // Reviews for this company
-  const companyReviews = DEMO_REVIEWS.filter((r) => r.companySlug === slug);
-  const companyUpdates = DEMO_UPDATES.filter((u) => u.companyId === company.id);
+  const companyAnnouncements = useMemo(() => {
+    return [
+      {
+        id: 'ann-1',
+        title: 'EUR and CAD local domestic clearing rails activated',
+        content: 'We are pleased to announce direct domestic bank clearing for all merchant accounts operating across the United Kingdom, Canada, and European Union.',
+        publishedAt: '2026-09-20T10:00:00Z',
+        priority: 'important',
+      }
+    ];
+  }, []);
+
+  const companyArticles = useMemo(() => {
+    return [
+      {
+        id: 'art-1',
+        title: 'How Mid-Market Retailers Can Reduce Friendly Fraud and Chargebacks',
+        summary: 'An operational blueprint for multi-currency fraud defense and 3D-Secure 2.2 optimization.',
+        content: 'Chargeback prevention starts with crystal-clear billing descriptors, instant automated refund portals, and pre-arbitration webhook notifications...',
+        publishedAt: '2026-09-10T12:00:00Z',
+        authorName: 'Marcus Vance, Head of Risk',
+        category: 'Fintech & Risk Management',
+      }
+    ];
+  }, []);
 
   // Filtered reviews
   const displayedReviews = useMemo(() => {
@@ -79,11 +92,11 @@ export default function CompanyProfilePage() {
       {/* Top Breadcrumb Header */}
       <div className="bg-white border-b border-slate-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 text-xs text-slate-500 flex items-center gap-1.5 flex-wrap">
-          <Link href="/" className="hover:text-teal-700">Home</Link>
+          <Link href="/" className="hover:text-blue-600">Home</Link>
           <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
-          <Link href="/directory" className="hover:text-teal-700">Directory</Link>
+          <Link href="/directory" className="hover:text-blue-600">Directory</Link>
           <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
-          <Link href={`/directory?category=${company.categorySlug}`} className="hover:text-teal-700">
+          <Link href={`/directory?category=${company.categorySlug}`} className="hover:text-blue-600">
             {company.category}
           </Link>
           <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
@@ -92,29 +105,29 @@ export default function CompanyProfilePage() {
       </div>
 
       {/* Hero Profile Banner */}
-      <div className="bg-white border-b border-slate-200 py-8 shadow-xs">
+      <div className="bg-white border-b border-slate-200 py-8 shadow-2xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
             
             {/* Left Column: Logo & Company Core Info */}
             <div className="flex items-start gap-5">
-              <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-gradient-to-br from-slate-100 to-slate-200 border-2 border-slate-200 flex items-center justify-center text-navy-900 font-extrabold text-3xl shadow-sm shrink-0">
-                {company.name.charAt(0)}
+              <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-gradient-to-br from-blue-600 to-blue-700 text-white font-black text-3xl flex items-center justify-center shadow-sm shrink-0">
+                {company.name.charAt(0).toUpperCase()}
               </div>
 
               <div className="space-y-2">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <h1 className="text-2xl sm:text-3xl font-extrabold text-navy-950 tracking-tight">
+                  <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
                     {company.name}
                   </h1>
                   {company.isVerified ? (
-                    <span className="inline-flex items-center gap-1 text-xs font-semibold text-teal-800 bg-teal-50 px-2.5 py-1 rounded-full border border-teal-200">
-                      <CheckCircle className="w-3.5 h-3.5 text-teal-600" />
+                    <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
+                      <CheckCircle className="w-3.5 h-3.5 text-emerald-600" />
                       Verified Profile
                     </span>
                   ) : (
                     <span className="inline-flex items-center gap-1 text-xs font-medium text-slate-600 bg-slate-100 px-2.5 py-1 rounded-full border border-slate-200">
-                      Unclaimed Profile
+                      Unclaimed Business Profile
                     </span>
                   )}
                 </div>
@@ -135,7 +148,7 @@ export default function CompanyProfilePage() {
                       href={company.website}
                       target="_blank"
                       rel="noopener noreferrer nofollow"
-                      className="text-teal-700 hover:underline flex items-center gap-0.5"
+                      className="text-blue-600 hover:underline flex items-center gap-0.5"
                     >
                       {company.website.replace('https://', '')}
                       <ExternalLink className="w-3 h-3" />
@@ -155,7 +168,7 @@ export default function CompanyProfilePage() {
             <div className="flex flex-col sm:flex-row md:flex-col gap-2.5 shrink-0">
               <Link
                 href={`/write-review?company=${encodeURIComponent(company.name)}&slug=${company.slug}`}
-                className="bg-teal-600 hover:bg-teal-700 text-white font-bold px-5 py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 shadow-sm transition-all"
+                className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-5 py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 shadow-sm transition-all"
               >
                 <PenSquare className="w-4 h-4" />
                 Write a Review
@@ -164,32 +177,20 @@ export default function CompanyProfilePage() {
               {!company.isClaimed && (
                 <Link
                   href={`/for-businesses?claim=${company.slug}`}
-                  className="bg-navy-900 hover:bg-navy-800 text-white font-semibold px-4 py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 transition-colors"
+                  className="bg-slate-900 hover:bg-slate-800 text-white font-semibold px-4 py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 transition-colors"
                 >
                   <Building2 className="w-4 h-4" />
                   Claim This Profile
                 </Link>
               )}
 
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={handleShare}
-                  className="flex-1 px-3 py-2 border border-slate-200 hover:bg-slate-50 rounded-lg text-xs font-semibold text-slate-700 flex items-center justify-center gap-1.5 transition-colors"
-                >
-                  <Share2 className="w-3.5 h-3.5" />
-                  {copiedLink ? 'Link Copied!' : 'Share Profile'}
-                </button>
-
-                <button
-                  onClick={() => setShowReportModal(true)}
-                  className="p-2 border border-slate-200 hover:bg-slate-50 rounded-lg text-slate-500 hover:text-rose-600 transition-colors"
-                  title="Report company profile for inaccurate info"
-                  aria-label="Report company profile"
-                >
-                  <Flag className="w-3.5 h-3.5" />
-                </button>
-              </div>
-
+              <button
+                onClick={handleShare}
+                className="px-3 py-2 border border-slate-200 hover:bg-slate-50 rounded-lg text-xs font-semibold text-slate-700 flex items-center justify-center gap-1.5 transition-colors"
+              >
+                <Share2 className="w-3.5 h-3.5" />
+                {copiedLink ? 'Link Copied!' : 'Share Profile'}
+              </button>
             </div>
 
           </div>
@@ -201,10 +202,14 @@ export default function CompanyProfilePage() {
                 Customer Rating
               </span>
               <div className="flex items-center gap-2 mt-1">
-                <StarRating rating={company.customerRating} size="md" showNumber />
+                {company.reviewCount > 0 ? (
+                  <StarRating rating={company.customerRating} size="md" showNumber />
+                ) : (
+                  <span className="text-xs font-semibold text-slate-500">No reviews yet</span>
+                )}
               </div>
               <span className="text-[11px] text-slate-400 mt-1 block">
-                From {company.reviewCount.toLocaleString()} verified reviews
+                From {company.reviewCount} customer reviews
               </span>
             </div>
 
@@ -216,316 +221,287 @@ export default function CompanyProfilePage() {
                 <TrustBadge score={company.trustScore} ratingTier={company.trustScoreRating} showExplanation />
               </div>
               <span className="text-[11px] text-slate-400 mt-1 block">
-                Independent platform assessment
+                Independent platform indicator
               </span>
             </div>
 
             <div className="bg-slate-50 rounded-xl p-3.5 border border-slate-200/80">
               <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide">
-                Response Rate
+                Profile Status
               </span>
-              <p className="text-base font-bold text-navy-950 mt-1">
-                {company.responseRate || 95}%
+              <p className="text-sm font-bold text-slate-900 mt-1">
+                {company.isClaimed ? 'Claimed by Business' : 'Unclaimed / Open Profile'}
               </p>
               <span className="text-[11px] text-slate-400 mt-1 block">
-                Average reply in {company.responseTime || '< 24 hours'}
+                Trustpilot-style permanent indexing
               </span>
             </div>
 
             <div className="bg-slate-50 rounded-xl p-3.5 border border-slate-200/80">
               <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide">
-                Entity Verification
+                Category
               </span>
-              <p className="text-base font-bold text-navy-950 mt-1 flex items-center gap-1">
-                {company.isVerified ? (
-                  <span className="text-emerald-700 flex items-center gap-1">
-                    <CheckCircle className="w-4 h-4 text-emerald-600" />
-                    Verified
-                  </span>
-                ) : (
-                  <span className="text-slate-600">Pending Review</span>
-                )}
+              <p className="text-sm font-bold text-slate-900 mt-1">
+                {company.category}
               </p>
               <span className="text-[11px] text-slate-400 mt-1 block">
-                Jurisdiction: {company.country}
+                Location: {company.country}
               </span>
             </div>
           </div>
 
+        </div>
+      </div>
+
+      {/* 4 Tabs Required by user */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
+        <div className="flex items-center gap-2 border-b border-slate-200 text-xs font-bold overflow-x-auto pb-1">
+          <button
+            onClick={() => setActiveTab('reviews')}
+            className={`pb-3 px-4 transition-colors border-b-2 flex items-center gap-2 whitespace-nowrap ${
+              activeTab === 'reviews'
+                ? 'border-blue-600 text-blue-600'
+                : 'border-transparent text-slate-500 hover:text-slate-900'
+            }`}
+          >
+            <MessageSquare className="w-4 h-4" />
+            1. Reviews ({companyReviews.length})
+          </button>
+
+          <button
+            onClick={() => setActiveTab('announcements')}
+            className={`pb-3 px-4 transition-colors border-b-2 flex items-center gap-2 whitespace-nowrap ${
+              activeTab === 'announcements'
+                ? 'border-blue-600 text-blue-600'
+                : 'border-transparent text-slate-500 hover:text-slate-900'
+            }`}
+          >
+            <Bell className="w-4 h-4" />
+            2. Company Announcement ({companyAnnouncements.length})
+          </button>
+
+          <button
+            onClick={() => setActiveTab('blog')}
+            className={`pb-3 px-4 transition-colors border-b-2 flex items-center gap-2 whitespace-nowrap ${
+              activeTab === 'blog'
+                ? 'border-blue-600 text-blue-600'
+                : 'border-transparent text-slate-500 hover:text-slate-900'
+            }`}
+          >
+            <FileText className="w-4 h-4" />
+            3. Company Blog ({companyArticles.length})
+          </button>
+
+          <button
+            onClick={() => setActiveTab('details')}
+            className={`pb-3 px-4 transition-colors border-b-2 flex items-center gap-2 whitespace-nowrap ${
+              activeTab === 'details'
+                ? 'border-blue-600 text-blue-600'
+                : 'border-transparent text-slate-500 hover:text-slate-900'
+            }`}
+          >
+            <Info className="w-4 h-4" />
+            4. Company Details
+          </button>
         </div>
       </div>
 
       {/* Main Content Layout */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
         
-        {/* Left 2 Cols: About, Star Breakdown & Reviews List */}
-        <div className="lg:col-span-2 space-y-8">
-          
-          {/* About Company Box */}
-          <section className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-3">
-            <h2 className="text-lg font-bold text-navy-950">About {company.name}</h2>
-            <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-line">
-              {company.description}
-            </p>
-            {company.address && (
-              <div className="pt-2 text-xs text-slate-500 border-t border-slate-100 flex items-center gap-1.5">
-                <MapPin className="w-3.5 h-3.5 text-slate-400" />
-                <span>Registered Address: {company.address}</span>
-              </div>
-            )}
-          </section>
-
-          {/* Customer Reviews Section */}
-          <section className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-5">
-              <div>
-                <h2 className="text-xl font-bold text-navy-950">Customer Reviews</h2>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  Showing feedback submitted by verified consumers
-                </p>
-              </div>
-
-              <Link
-                href={`/write-review?company=${encodeURIComponent(company.name)}&slug=${company.slug}`}
-                className="bg-teal-600 hover:bg-teal-700 text-white font-semibold px-4 py-2 rounded-lg text-xs self-start sm:self-auto flex items-center gap-1.5"
-              >
-                <PenSquare className="w-3.5 h-3.5" />
-                Write Review
-              </Link>
-            </div>
-
-            {/* Rating Breakdown Bar Chart */}
-            <div className="bg-slate-50 rounded-xl p-4 border border-slate-200/80 space-y-2">
-              <span className="text-xs font-bold text-slate-800 block mb-2">
-                Rating Distribution
-              </span>
-              {[5, 4, 3, 2, 1].map((stars) => {
-                const count = company.ratingDistribution[stars as keyof typeof company.ratingDistribution] || 0;
-                const percentage = Math.round((count / totalRatingsCount) * 100) || 0;
-                const isSelected = filterRating === stars;
-
-                return (
-                  <button
-                    key={stars}
-                    type="button"
-                    onClick={() => setFilterRating(isSelected ? null : stars)}
-                    className={`w-full flex items-center gap-3 text-xs p-1 rounded-md transition-colors ${
-                      isSelected ? 'bg-teal-100 font-semibold' : 'hover:bg-slate-100'
-                    }`}
-                  >
-                    <span className="w-12 text-left font-medium text-slate-700">{stars} Stars</span>
-                    <div className="flex-1 h-2.5 bg-slate-200 rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-amber-400 rounded-full transition-all"
-                        style={{ width: `${percentage}%` }}
-                      />
-                    </div>
-                    <span className="w-16 text-right text-slate-500">{percentage}% ({count})</span>
-                  </button>
-                );
-              })}
-
-              {filterRating !== null && (
-                <div className="pt-2 text-right">
-                  <button
-                    onClick={() => setFilterRating(null)}
-                    className="text-xs text-teal-700 hover:underline font-medium"
-                  >
-                    Clear Star Filter (Showing {filterRating}-star reviews only)
-                  </button>
+        {/* TAB 1: Reviews */}
+        {activeTab === 'reviews' && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2 space-y-6">
+              
+              {/* Reviews Header */}
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-xl font-bold text-slate-900">Customer Reviews</h2>
+                  <p className="text-xs text-slate-500">Verified buyer experiences for {company.name}</p>
                 </div>
-              )}
+                <Link
+                  href={`/write-review?company=${encodeURIComponent(company.name)}&slug=${company.slug}`}
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-xs transition-colors flex items-center gap-1.5"
+                >
+                  <PenSquare className="w-3.5 h-3.5" />
+                  Write a Review
+                </Link>
+              </div>
+
+              {/* Reviews List */}
+              <div className="space-y-4">
+                {displayedReviews.length > 0 ? (
+                  displayedReviews.map((review) => (
+                    <ReviewCard key={review.id} review={review} />
+                  ))
+                ) : (
+                  <div className="bg-white rounded-2xl border border-dashed border-slate-300 p-12 text-center space-y-4 shadow-2xs">
+                    <MessageSquare className="w-12 h-12 text-slate-300 mx-auto" />
+                    <h3 className="font-bold text-base text-slate-900">No reviews yet for {company.name}</h3>
+                    <p className="text-xs text-slate-500 max-w-md mx-auto leading-relaxed">
+                      Be the first person in the world to post a review for this company! Your review will be indexed by Google and help millions of buyers make informed decisions.
+                    </p>
+                    <Link
+                      href={`/write-review?company=${encodeURIComponent(company.name)}&slug=${company.slug}`}
+                      className="inline-flex items-center gap-2 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-xs transition-colors"
+                    >
+                      <PenSquare className="w-4 h-4" />
+                      Post the First Review
+                    </Link>
+                  </div>
+                )}
+              </div>
             </div>
 
-            {/* Reviews List */}
-            <div className="space-y-4">
-              {displayedReviews.length > 0 ? (
-                displayedReviews.map((review) => (
-                  <ReviewCard key={review.id} review={review} />
-                ))
-              ) : (
-                <div className="text-center py-10 bg-slate-50 rounded-xl border border-dashed border-slate-200 space-y-2">
-                  <MessageSquare className="w-8 h-8 text-slate-300 mx-auto" />
-                  <p className="text-xs font-semibold text-slate-700">
-                    No reviews found for this specific filter.
+            {/* Sidebar Rating Distribution */}
+            <div className="space-y-6">
+              <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-3">
+                <h3 className="font-bold text-sm text-slate-900">Rating Breakdown</h3>
+                {[5, 4, 3, 2, 1].map((stars) => {
+                  const count = company.ratingDistribution[stars as keyof typeof company.ratingDistribution] || 0;
+                  const percentage = totalRatingsCount > 0 ? Math.round((count / totalRatingsCount) * 100) : 0;
+                  return (
+                    <button
+                      key={stars}
+                      type="button"
+                      onClick={() => setFilterRating(filterRating === stars ? null : stars)}
+                      className={`w-full flex items-center gap-3 text-xs p-1 rounded-md transition-colors ${
+                        filterRating === stars ? 'bg-blue-100 font-semibold' : 'hover:bg-slate-50'
+                      }`}
+                    >
+                      <span className="w-12 text-left font-medium text-slate-700">{stars} Stars</span>
+                      <div className="flex-1 h-2 bg-slate-200 rounded-full overflow-hidden">
+                        <div className="h-full bg-amber-400 rounded-full" style={{ width: `${percentage}%` }} />
+                      </div>
+                      <span className="w-12 text-right text-slate-500">{percentage}%</span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {!company.isClaimed && (
+                <div className="bg-gradient-to-br from-slate-900 to-slate-950 text-white rounded-2xl p-6 shadow-xs space-y-3 text-xs">
+                  <h4 className="font-bold text-sm text-white">Own or represent {company.name}?</h4>
+                  <p className="text-slate-300 leading-relaxed">
+                    Claim this business profile to reply publicly to customer reviews, broadcast official company announcements, and publish articles.
                   </p>
-                  <button
-                    onClick={() => setFilterRating(null)}
-                    className="text-xs text-teal-700 font-semibold underline"
+                  <Link
+                    href={`/for-businesses?claim=${company.slug}`}
+                    className="block w-full text-center py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl text-xs transition-colors"
                   >
-                    Show all reviews
-                  </button>
+                    Claim This Profile
+                  </Link>
                 </div>
               )}
-            </div>
-
-          </section>
-
-        </div>
-
-        {/* Right Col: Trust Details, Official Company Updates & Transparency */}
-        <div className="space-y-6">
-          
-          {/* Trust Score Breakdown Widget */}
-          <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="font-bold text-sm text-navy-950">Trust Score Analysis</h3>
-              <TrustBadge score={company.trustScore} ratingTier={company.trustScoreRating} size="sm" />
-            </div>
-
-            <p className="text-xs text-slate-600 leading-relaxed">
-              WinkBench computes this score through automated registry verification, customer reply velocity, domain reputation checks, and resolution ratios.
-            </p>
-
-            <div className="space-y-2.5 pt-2 text-xs border-t border-slate-100">
-              <div className="flex justify-between items-center text-slate-600">
-                <span>Corporate Registration Check</span>
-                <span className="text-emerald-700 font-semibold">Passed (100%)</span>
-              </div>
-              <div className="flex justify-between items-center text-slate-600">
-                <span>Domain & SSL Integrity</span>
-                <span className="text-emerald-700 font-semibold">Active & Valid</span>
-              </div>
-              <div className="flex justify-between items-center text-slate-600">
-                <span>Dispute Resolution Ratio</span>
-                <span className="font-semibold text-navy-900">{company.responseRate || 95}%</span>
-              </div>
-              <div className="flex justify-between items-center text-slate-600">
-                <span>Review Authenticity Audit</span>
-                <span className="text-emerald-700 font-semibold">High Confidence</span>
-              </div>
-            </div>
-
-            <div className="pt-2 border-t border-slate-100">
-              <Link
-                href="/trust-score-explained"
-                className="text-xs text-teal-700 hover:underline font-semibold block text-center"
-              >
-                Read WinkBench Trust Score Methodology →
-              </Link>
             </div>
           </div>
+        )}
 
-          {/* Official Company Updates */}
-          <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-4">
-            <div className="flex items-center gap-2">
-              <FileText className="w-4 h-4 text-teal-600" />
-              <h3 className="font-bold text-sm text-navy-950">Official Company Updates</h3>
-            </div>
+        {/* TAB 2: Company Announcements */}
+        {activeTab === 'announcements' && (
+          <div className="max-w-4xl space-y-4">
+            <h2 className="text-xl font-bold text-slate-900">Official Company Announcements</h2>
+            <p className="text-xs text-slate-500">Updates and notices published directly by the verified company management.</p>
 
-            {companyUpdates.length > 0 ? (
-              <div className="space-y-3">
-                {companyUpdates.map((update) => (
-                  <div key={update.id} className="p-3 bg-slate-50 rounded-xl border border-slate-200/80 space-y-1.5">
-                    {update.tag && (
-                      <span className="text-[10px] font-bold text-teal-800 bg-teal-100/70 px-2 py-0.5 rounded">
-                        {update.tag}
+            {companyAnnouncements.length > 0 ? (
+              <div className="space-y-4 pt-2">
+                {companyAnnouncements.map((ann) => (
+                  <div key={ann.id} className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-2">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                        ann.priority === 'important' ? 'bg-amber-100 text-amber-800' : 'bg-blue-100 text-blue-800'
+                      }`}>
+                        {ann.priority === 'important' ? 'Important Notice' : 'Announcement'}
                       </span>
-                    )}
-                    <h4 className="font-bold text-xs text-navy-950">{update.title}</h4>
-                    <p className="text-xs text-slate-600 line-clamp-3 leading-relaxed">
-                      {update.content}
-                    </p>
-                    <time className="text-[10px] text-slate-400 block pt-1">
-                      Published {new Date(update.publishedAt).toLocaleDateString()}
-                    </time>
+                      <span className="text-slate-400">{new Date(ann.publishedAt).toLocaleDateString()}</span>
+                    </div>
+                    <h3 className="font-bold text-base text-slate-900">{ann.title}</h3>
+                    <p className="text-xs text-slate-600 leading-relaxed whitespace-pre-line">{ann.content}</p>
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="text-xs text-slate-500 italic">
-                {company.name} has not published company updates yet.
-              </p>
+              <div className="bg-white rounded-2xl border border-dashed border-slate-300 p-10 text-center text-xs text-slate-500">
+                No company announcements posted yet by {company.name}.
+              </div>
             )}
           </div>
+        )}
 
-          {/* Claim Box if unclaimed */}
-          {!company.isClaimed && (
-            <div className="bg-gradient-to-br from-navy-900 to-navy-950 text-white rounded-2xl p-5 shadow-sm space-y-3">
-              <h4 className="font-bold text-sm text-white">Do you represent {company.name}?</h4>
-              <p className="text-xs text-slate-300 leading-relaxed">
-                Claim this profile to respond to customer reviews, update business hours, upload corporate credentials, and view customer sentiment analytics.
+        {/* TAB 3: Company Blog / Articles */}
+        {activeTab === 'blog' && (
+          <div className="max-w-4xl space-y-4">
+            <h2 className="text-xl font-bold text-slate-900">Company Blog & Insights</h2>
+            <p className="text-xs text-slate-500">Educational articles and updates published by {company.name}.</p>
+
+            {companyArticles.length > 0 ? (
+              <div className="space-y-4 pt-2">
+                {companyArticles.map((art) => (
+                  <article key={art.id} className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-3">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
+                        {art.category}
+                      </span>
+                      <span className="text-slate-400">{new Date(art.publishedAt).toLocaleDateString()}</span>
+                    </div>
+                    <h3 className="font-bold text-base text-slate-900">{art.title}</h3>
+                    <p className="text-xs text-slate-600 leading-relaxed">{art.content || art.summary}</p>
+                    <div className="pt-2 text-xs text-slate-400">
+                      Author: {art.authorName}
+                    </div>
+                  </article>
+                ))}
+              </div>
+            ) : (
+              <div className="bg-white rounded-2xl border border-dashed border-slate-300 p-10 text-center text-xs text-slate-500">
+                No blog articles published yet by {company.name}.
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* TAB 4: Company Details */}
+        {activeTab === 'details' && (
+          <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-xs max-w-3xl space-y-6 text-xs">
+            <div>
+              <h2 className="text-lg font-bold text-slate-900">About {company.name}</h2>
+              <p className="text-slate-600 leading-relaxed mt-2 whitespace-pre-line">
+                {company.description}
               </p>
-              <Link
-                href={`/for-businesses?claim=${company.slug}`}
-                className="w-full bg-teal-500 hover:bg-teal-400 text-navy-950 font-bold py-2 rounded-lg text-xs flex items-center justify-center transition-colors shadow-sm"
-              >
-                Claim This Profile Today
-              </Link>
-            </div>
-          )}
-
-        </div>
-
-      </div>
-
-      {/* Report Company Modal */}
-      {showReportModal && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl border border-slate-200">
-            <div className="flex items-center justify-between">
-              <h3 className="text-base font-bold text-navy-950 flex items-center gap-2">
-                <Flag className="w-4 h-4 text-rose-600" />
-                Report Company Information
-              </h3>
-              <button
-                onClick={() => setShowReportModal(false)}
-                className="text-slate-400 hover:text-slate-600 text-sm font-bold"
-              >
-                ✕
-              </button>
             </div>
 
-            <p className="text-xs text-slate-600 leading-relaxed">
-              If this business profile displays inaccurate contact information, fake corporate addresses, or has ceased trading, submit a report for our compliance team to investigate.
-            </p>
-
-            <div className="space-y-2">
-              <label className="text-xs font-semibold text-slate-700 block">Reason for Report</label>
-              <select className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg">
-                <option>Incorrect company details or website</option>
-                <option>Company has ceased operations / closed down</option>
-                <option>Fraudulent entity / Impersonation</option>
-                <option>Duplicate listing</option>
-                <option>Other issue</option>
-              </select>
-
-              <label className="text-xs font-semibold text-slate-700 block pt-2">Supporting Details</label>
-              <textarea
-                placeholder="Provide links, public registry evidence, or notes..."
-                rows={3}
-                className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg"
-              />
-            </div>
-
-            <div className="flex justify-end gap-2 pt-2">
-              <button
-                onClick={() => setShowReportModal(false)}
-                className="px-4 py-2 border border-slate-200 rounded-lg text-xs font-medium text-slate-600"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => {
-                  setShowReportModal(false);
-                  setReportedCompany(true);
-                }}
-                className="px-4 py-2 bg-rose-600 text-white rounded-lg text-xs font-bold hover:bg-rose-700"
-              >
-                Submit Report
-              </button>
+            <div className="border-t border-slate-100 pt-4 space-y-3">
+              <h3 className="font-bold text-slate-900 text-sm">Company Contact Information</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-slate-600">
+                <div>
+                  <span className="text-slate-400 block text-[11px]">Official Website</span>
+                  <a href={company.website} target="_blank" rel="noopener noreferrer" className="text-blue-600 font-semibold hover:underline">
+                    {company.website}
+                  </a>
+                </div>
+                {company.phone && (
+                  <div>
+                    <span className="text-slate-400 block text-[11px]">Telephone</span>
+                    <span className="font-semibold text-slate-800">{company.phone}</span>
+                  </div>
+                )}
+                {company.address && (
+                  <div>
+                    <span className="text-slate-400 block text-[11px]">Address</span>
+                    <span className="font-semibold text-slate-800">{company.address}</span>
+                  </div>
+                )}
+                <div>
+                  <span className="text-slate-400 block text-[11px]">Location</span>
+                  <span className="font-semibold text-slate-800">{company.city}, {company.country}</span>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {reportedCompany && (
-        <div className="fixed bottom-4 right-4 z-50 bg-navy-900 text-white px-4 py-3 rounded-xl shadow-xl border border-navy-800 text-xs flex items-center gap-2">
-          <CheckCircle className="w-4 h-4 text-teal-400 shrink-0" />
-          <span>Report submitted to the WinkBench Compliance Queue. Thank you!</span>
-          <button onClick={() => setReportedCompany(false)} className="ml-2 text-slate-400 hover:text-white">✕</button>
-        </div>
-      )}
+      </div>
 
     </div>
   );

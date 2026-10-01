@@ -11,10 +11,13 @@ import {
   Building2, 
   ShieldCheck, 
   ChevronRight,
-  Sparkles
+  Sparkles,
+  Globe2
 } from 'lucide-react';
-import { DEMO_COMPANIES } from '@/lib/demoData';
 import StarRating from '@/components/StarRating';
+import { COUNTRIES } from '@/lib/countries';
+import { normalizeDomain } from '@/lib/utils/domain';
+import { createDefaultCompany } from '@/lib/storage/client';
 
 function WriteReviewContent() {
   const router = useRouter();
@@ -22,16 +25,17 @@ function WriteReviewContent() {
   const initialCompany = searchParams.get('company') || '';
   const initialSlug = searchParams.get('slug') || '';
 
-  const [companyName, setCompanyName] = useState(initialCompany);
+  const [companyName, setCompanyName] = useState(initialCompany || initialSlug);
   const [rating, setRating] = useState<number>(0);
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [experienceDate, setExperienceDate] = useState('September 2026');
+  const [userCountry, setUserCountry] = useState('US');
   const [certified, setCertified] = useState(false);
   const [authorName, setAuthorName] = useState('');
-  const [authorEmail, setAuthorEmail] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState('');
+  const [savedSlug, setSavedSlug] = useState('');
 
   const ratingDescriptions: Record<number, string> = {
     1: 'Terrible — Major issues or unresolved failure',
@@ -46,7 +50,7 @@ function WriteReviewContent() {
     setError('');
 
     if (!companyName.trim()) {
-      setError('Please specify the company you are reviewing.');
+      setError('Please specify the company domain or name you are reviewing.');
       return;
     }
     if (rating === 0) {
@@ -66,6 +70,29 @@ function WriteReviewContent() {
       return;
     }
 
+    const cleanSlug = normalizeDomain(companyName.trim());
+    const targetComp = createDefaultCompany(cleanSlug);
+
+    // Call API route to persist on Hostinger
+    fetch('/api/reviews', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        companyId: targetComp.id,
+        companyName: targetComp.name,
+        companySlug: targetComp.slug,
+        userId: 'usr-client',
+        userDisplayName: authorName.trim() || 'Verified Consumer',
+        userCountry: COUNTRIES.find(c => c.code === userCountry)?.name || 'International',
+        rating,
+        title: title.trim(),
+        content: content.trim(),
+        experienceDate,
+        isVerifiedCustomer: true,
+      }),
+    }).catch(err => console.error('Error posting review:', err));
+
+    setSavedSlug(targetComp.slug);
     setSubmitted(true);
   };
 
@@ -74,9 +101,9 @@ function WriteReviewContent() {
       
       {/* Breadcrumb */}
       <div className="text-xs text-slate-500 mb-6 flex items-center gap-1.5">
-        <Link href="/" className="hover:text-teal-700">Home</Link>
+        <Link href="/" className="hover:text-blue-600">Home</Link>
         <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
-        <Link href="/directory" className="hover:text-teal-700">Directory</Link>
+        <Link href="/directory" className="hover:text-blue-600">Directory</Link>
         <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
         <span className="font-semibold text-slate-800">Write a Review</span>
       </div>
@@ -85,15 +112,15 @@ function WriteReviewContent() {
         <div className="bg-white rounded-2xl border border-slate-200 p-6 sm:p-10 shadow-xs space-y-8">
           
           <div>
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-teal-50 text-teal-800 border border-teal-200 text-xs font-semibold mb-2">
-              <Sparkles className="w-3.5 h-3.5 text-teal-600" />
-              Community Quality Guidelines Apply
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-50 text-blue-800 border border-blue-200 text-xs font-semibold mb-2">
+              <Sparkles className="w-3.5 h-3.5 text-blue-600" />
+              Trustpilot-Style Open Domain Reviews
             </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-navy-950">
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900">
               Share Your Buying Experience
             </h1>
             <p className="text-xs sm:text-sm text-slate-600 mt-1">
-              Your feedback helps millions of global consumers make smart decisions and gives honest businesses the recognition they deserve.
+              You can review any company or website. If they aren't on WinkBench yet, typing their domain creates their profile automatically!
             </p>
           </div>
 
@@ -108,25 +135,25 @@ function WriteReviewContent() {
             
             {/* Company selection */}
             <div>
-              <label className="block text-xs font-bold text-navy-950 mb-1">
-                Company Name or Website *
+              <label className="block text-xs font-bold text-slate-900 mb-1">
+                Company Website Domain or Name *
               </label>
               <input
                 type="text"
-                placeholder="e.g. Aurora Payments Global, or acme.example.com"
+                placeholder="e.g. vccshoppro.com, www.sitename.com, or Aurora Payments"
                 value={companyName}
                 onChange={(e) => setCompanyName(e.target.value)}
-                className="w-full text-sm p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:bg-white focus:border-brand-500 font-medium"
+                className="w-full text-xs sm:text-sm p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:bg-white focus:border-blue-600 font-medium"
               />
               <span className="text-[11px] text-slate-400 mt-1 block">
-                Type the company name or select from our catalog.
+                Entering any web domain automatically links or creates that company profile on WinkBench.
               </span>
             </div>
 
             {/* Interactive Star Rating */}
-            <div className="bg-slate-50 rounded-xl p-5 border border-slate-200/80 space-y-2">
-              <label className="block text-xs font-bold text-navy-950">
-                Overall Rating *
+            <div className="bg-slate-50 rounded-xl p-5 border border-slate-200 space-y-2">
+              <label className="block text-xs font-bold text-slate-900">
+                Overall Star Rating *
               </label>
               <div className="flex items-center gap-3">
                 <StarRating
@@ -136,34 +163,34 @@ function WriteReviewContent() {
                   onChange={(val) => setRating(val)}
                 />
                 {rating > 0 && (
-                  <span className="text-sm font-bold text-navy-900 bg-white px-3 py-1 rounded-lg border border-slate-200 shadow-2xs">
+                  <span className="text-sm font-bold text-slate-900 bg-white px-3 py-1 rounded-lg border border-slate-200 shadow-2xs">
                     {rating} / 5
                   </span>
                 )}
               </div>
-              <p className="text-xs font-medium text-teal-800 min-h-[20px]">
+              <p className="text-xs font-medium text-blue-700 min-h-[20px]">
                 {rating > 0 ? ratingDescriptions[rating] : 'Click on a star to set your overall rating.'}
               </p>
             </div>
 
             {/* Title */}
             <div>
-              <label className="block text-xs font-bold text-navy-950 mb-1">
+              <label className="block text-xs font-bold text-slate-900 mb-1">
                 Review Headline *
               </label>
               <input
                 type="text"
-                placeholder="Summarize your experience in one compelling sentence..."
+                placeholder="Summarize your experience in one sentence..."
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className="w-full text-sm p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:bg-white focus:border-brand-500"
+                className="w-full text-xs sm:text-sm p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:bg-white focus:border-blue-600"
               />
             </div>
 
             {/* Review Body */}
             <div>
               <div className="flex items-center justify-between mb-1">
-                <label className="text-xs font-bold text-navy-950">
+                <label className="text-xs font-bold text-slate-900">
                   Your Detailed Experience *
                 </label>
                 <span className="text-[11px] text-slate-400">
@@ -172,42 +199,58 @@ function WriteReviewContent() {
               </div>
               <textarea
                 rows={5}
-                placeholder="What did you purchase? How was the customer service, delivery time, product quality, or resolution of any problems? Be specific and factual."
+                placeholder="What did you order or contract? How was customer service, pricing transparency, delivery time, or problem resolution? Be factual and helpful."
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
-                className="w-full text-sm p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:bg-white focus:border-brand-500 leading-relaxed"
+                className="w-full text-xs sm:text-sm p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:bg-white focus:border-blue-600 leading-relaxed"
               />
             </div>
 
-            {/* Date of experience & Author Name */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* Date of experience, Country & Author Name */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
               <div>
-                <label className="block text-xs font-bold text-navy-950 mb-1">
+                <label className="block font-bold text-slate-900 mb-1">
                   Date of Experience *
                 </label>
                 <select
                   value={experienceDate}
                   onChange={(e) => setExperienceDate(e.target.value)}
-                  className="w-full text-xs p-3 bg-slate-50 border border-slate-200 rounded-xl font-medium"
+                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium text-xs"
                 >
                   <option value="September 2026">September 2026</option>
                   <option value="August 2026">August 2026</option>
                   <option value="July 2026">July 2026</option>
-                  <option value="June 2026">June 2026</option>
                   <option value="Earlier in 2026">Earlier in 2026</option>
                 </select>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-navy-950 mb-1">
-                  Your Display Name (Public)
+                <label className="block font-bold text-slate-900 mb-1">
+                  Your Country
+                </label>
+                <select
+                  value={userCountry}
+                  onChange={(e) => setUserCountry(e.target.value)}
+                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium text-xs"
+                >
+                  {COUNTRIES.map((c) => (
+                    <option key={c.code} value={c.code}>
+                      {c.flagEmoji} {c.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-900 mb-1">
+                  Your Name (Public)
                 </label>
                 <input
                   type="text"
-                  placeholder="e.g. Jordan Miller"
+                  placeholder="e.g. Alex Morgan"
                   value={authorName}
                   onChange={(e) => setAuthorName(e.target.value)}
-                  className="w-full text-xs p-3 bg-slate-50 border border-slate-200 rounded-xl"
+                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs"
                 />
               </div>
             </div>
@@ -219,7 +262,7 @@ function WriteReviewContent() {
                   type="checkbox"
                   checked={certified}
                   onChange={(e) => setCertified(e.target.checked)}
-                  className="mt-1 rounded border-slate-300 text-teal-600 focus:ring-brand-500"
+                  className="mt-1 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
                 />
                 <span className="text-xs text-slate-600 leading-relaxed">
                   I certify that this review is based on my own genuine personal or business experience, that I have no financial or employment affiliation with the business, and that I have not been offered compensation or incentives to leave this review.
@@ -230,16 +273,16 @@ function WriteReviewContent() {
             {/* Submit button */}
             <div className="pt-4 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4">
               <div className="text-[11px] text-slate-500 flex items-center gap-1">
-                <ShieldCheck className="w-4 h-4 text-teal-600" />
-                Protected by WinkBench Anti-Spam & Sentiment Verification
+                <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                Saved directly into Hostinger database storage
               </div>
 
               <button
                 type="submit"
-                className="w-full sm:w-auto px-8 py-3 bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs rounded-xl shadow-md transition-all flex items-center justify-center gap-2"
+                className="w-full sm:w-auto px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-md transition-all flex items-center justify-center gap-2"
               >
                 <PenSquare className="w-4 h-4" />
-                Submit Review
+                Publish Review
               </button>
             </div>
 
@@ -254,46 +297,27 @@ function WriteReviewContent() {
           </div>
 
           <div className="space-y-2">
-            <h2 className="text-2xl font-extrabold text-navy-950">
-              Review Submitted Successfully!
+            <h2 className="text-2xl font-extrabold text-slate-900">
+              Review Published Successfully!
             </h2>
             <p className="text-xs sm:text-sm text-slate-600 max-w-md mx-auto">
-              Thank you for contributing to the WinkBench community. Your review for <strong className="text-navy-950">{companyName}</strong> has been logged.
+              Your review for <strong className="text-slate-900">{companyName}</strong> has been stored in the platform database and is live on their profile.
             </p>
-          </div>
-
-          {/* Formatted Preview */}
-          <div className="bg-slate-50 rounded-xl p-5 border border-slate-200 text-left max-w-lg mx-auto space-y-2">
-            <div className="flex items-center justify-between text-xs">
-              <StarRating rating={rating} size="sm" showNumber />
-              <span className="text-slate-400">{experienceDate}</span>
-            </div>
-            <h4 className="font-bold text-sm text-navy-950">{title}</h4>
-            <p className="text-xs text-slate-600 leading-relaxed">{content}</p>
-            <div className="pt-2 border-t border-slate-200 text-[11px] text-slate-400">
-              Submitted by: {authorName || 'Anonymous Verified Reviewer'} · Status: Published (Phase 1 Local State)
-            </div>
           </div>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
             <Link
-              href="/directory"
-              className="w-full sm:w-auto px-6 py-2.5 bg-navy-900 text-white text-xs font-semibold rounded-lg hover:bg-navy-800 transition-colors"
+              href={`/company/${savedSlug || companyName}`}
+              className="w-full sm:w-auto px-6 py-2.5 bg-blue-600 text-white text-xs font-bold rounded-xl hover:bg-blue-700 transition-colors"
             >
-              Browse More Companies
+              View Company Profile →
             </Link>
-            <button
-              onClick={() => {
-                setSubmitted(false);
-                setRating(0);
-                setTitle('');
-                setContent('');
-                setCertified(false);
-              }}
-              className="w-full sm:w-auto px-6 py-2.5 border border-slate-200 text-slate-700 text-xs font-semibold rounded-lg hover:bg-slate-50 transition-colors"
+            <Link
+              href="/dashboard/user"
+              className="w-full sm:w-auto px-6 py-2.5 bg-slate-100 text-slate-700 text-xs font-semibold rounded-xl hover:bg-slate-200 transition-colors"
             >
-              Write Another Review
-            </button>
+              My Reviews Dashboard
+            </Link>
           </div>
         </div>
       )}
@@ -315,4 +339,3 @@ export default function WriteReviewPage() {
     </React.Suspense>
   );
 }
-

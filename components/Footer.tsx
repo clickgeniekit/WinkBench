@@ -2,41 +2,42 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { ShieldCheck, Globe2, HeartHandshake } from 'lucide-react';
+import { ShieldCheck, Globe2, HeartHandshake, Server, Database } from 'lucide-react';
+import WinkBenchLogo from './WinkBenchLogo';
 
 export default function Footer() {
   return (
-    <footer className="bg-navy-950 text-slate-300 mt-auto border-t border-navy-800 text-sm">
+    <footer className="bg-slate-950 text-slate-300 mt-auto border-t border-slate-800 text-xs">
       {/* Top Value Banner */}
-      <div className="border-b border-navy-800/80 bg-navy-900/60 py-6">
+      <div className="border-b border-slate-800 bg-slate-900/70 py-6">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-3 gap-6 text-center md:text-left">
           <div className="flex items-center justify-center md:justify-start gap-3">
-            <div className="w-10 h-10 rounded-lg bg-teal-950/60 border border-teal-700/50 flex items-center justify-center text-teal-400 shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-blue-950/80 border border-blue-700/50 flex items-center justify-center text-blue-400 shrink-0">
               <ShieldCheck className="w-5 h-5" />
             </div>
             <div>
-              <h4 className="font-semibold text-white text-sm">Unbiased Trust Score</h4>
-              <p className="text-xs text-slate-400">Independent rating algorithm. Not purchasable by any business.</p>
+              <h4 className="font-bold text-white text-xs">Dynamic Domain Indexing</h4>
+              <p className="text-[11px] text-slate-400">Search any website domain worldwide to read or post permanent reviews.</p>
             </div>
           </div>
 
           <div className="flex items-center justify-center md:justify-start gap-3">
-            <div className="w-10 h-10 rounded-lg bg-teal-950/60 border border-teal-700/50 flex items-center justify-center text-teal-400 shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-emerald-950/80 border border-emerald-700/50 flex items-center justify-center text-emerald-400 shrink-0">
               <Globe2 className="w-5 h-5" />
             </div>
             <div>
-              <h4 className="font-semibold text-white text-sm">Global Coverage</h4>
-              <p className="text-xs text-slate-400">Serving buyers and businesses across the US, UK, Canada, Australia, and worldwide.</p>
+              <h4 className="font-bold text-white text-xs">Global Country Reach</h4>
+              <p className="text-[11px] text-slate-400">Supports all 200+ nations. Buyers and businesses across every continent.</p>
             </div>
           </div>
 
           <div className="flex items-center justify-center md:justify-start gap-3">
-            <div className="w-10 h-10 rounded-lg bg-teal-950/60 border border-teal-700/50 flex items-center justify-center text-teal-400 shrink-0">
-              <HeartHandshake className="w-5 h-5" />
+            <div className="w-10 h-10 rounded-xl bg-blue-950/80 border border-blue-700/50 flex items-center justify-center text-blue-400 shrink-0">
+              <Database className="w-5 h-5" />
             </div>
             <div>
-              <h4 className="font-semibold text-white text-sm">Authentic Human Voices</h4>
-              <p className="text-xs text-slate-400">Audit-trailed reviews, verified purchase tags, and business replies.</p>
+              <h4 className="font-bold text-white text-xs">Hostinger Native Runtime</h4>
+              <p className="text-[11px] text-slate-400">100% self-hosted persistent database. No external Firebase dependency.</p>
             </div>
           </div>
         </div>
@@ -44,133 +45,96 @@ export default function Footer() {
 
       {/* Main Footer Links */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
           
-          {/* Brand info */}
-          <div className="col-span-2 space-y-4">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-navy-800 flex items-center justify-center text-white ring-1 ring-white/10">
-                <span className="font-bold text-base text-teal-400">W</span>
-                <span className="font-bold text-xs -ml-0.5 text-white">B</span>
-              </div>
-              <span className="font-bold text-xl text-white tracking-tight">
-                Wink<span className="text-teal-400">Bench</span>
-              </span>
-            </div>
-            <p className="text-xs text-slate-400 leading-relaxed max-w-sm">
-              WinkBench.com is a global business reviews, reputation, and community platform. We empower consumers to make informed buying decisions and help honorable businesses demonstrate authentic credibility.
+          {/* Brand Column */}
+          <div className="col-span-2 sm:col-span-1 space-y-4">
+            <WinkBenchLogo size="md" variant="light" />
+            <p className="text-[11px] text-slate-400 leading-relaxed">
+              WinkBench.com is an independent global business reviews and reputation platform. Discover trustworthy businesses, search any domain, and read verified customer feedback.
             </p>
-            <div className="flex items-center gap-2 pt-2">
-              <span className="inline-block px-2.5 py-0.5 rounded text-[11px] font-medium bg-teal-950 text-teal-300 border border-teal-800">
-                Phase 1 Preview
-              </span>
-              <span className="text-xs text-slate-500">
-                Hostinger Next.js Architecture
-              </span>
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-slate-800 text-[10px] text-slate-300 border border-slate-700">
+              <Server className="w-3 h-3 text-blue-400" />
+              Hostinger Platform Target
             </div>
           </div>
 
           {/* Directory Column */}
           <div className="space-y-3">
-            <h5 className="font-semibold text-white text-xs uppercase tracking-wider">Explore</h5>
-            <ul className="space-y-2 text-xs">
+            <h5 className="font-bold text-white text-[11px] uppercase tracking-wider">Browse & Discover</h5>
+            <ul className="space-y-2 text-[11px]">
               <li>
-                <Link href="/directory" className="hover:text-teal-400 transition-colors">
+                <Link href="/directory" className="hover:text-blue-400 transition-colors">
                   Business Directory
                 </Link>
               </li>
               <li>
-                <Link href="/categories" className="hover:text-teal-400 transition-colors">
-                  Browse by Category
+                <Link href="/categories" className="hover:text-blue-400 transition-colors">
+                  All Global Categories
                 </Link>
               </li>
               <li>
-                <Link href="/write-review" className="hover:text-teal-400 transition-colors">
+                <Link href="/write-review" className="hover:text-blue-400 transition-colors font-semibold text-blue-400">
                   Write a Review
                 </Link>
               </li>
               <li>
-                <Link href="/community" className="hover:text-teal-400 transition-colors">
-                  Community Discussions
-                </Link>
-              </li>
-              <li>
-                <Link href="/directory?country=US" className="hover:text-teal-400 transition-colors">
-                  United States Businesses
-                </Link>
-              </li>
-              <li>
-                <Link href="/directory?country=GB" className="hover:text-teal-400 transition-colors">
-                  United Kingdom Businesses
+                <Link href="/company/vccshoppro.com" className="hover:text-blue-400 transition-colors">
+                  Check Domain Profile (e.g. vccshoppro.com)
                 </Link>
               </li>
             </ul>
           </div>
 
-          {/* For Businesses */}
+          {/* Dashboards Column */}
           <div className="space-y-3">
-            <h5 className="font-semibold text-white text-xs uppercase tracking-wider">For Businesses</h5>
-            <ul className="space-y-2 text-xs">
+            <h5 className="font-bold text-white text-[11px] uppercase tracking-wider">Dashboards & Portals</h5>
+            <ul className="space-y-2 text-[11px]">
               <li>
-                <Link href="/for-businesses" className="hover:text-teal-400 transition-colors">
-                  Claim Your Company Profile
+                <Link href="/dashboard/user" className="hover:text-blue-400 transition-colors">
+                  User Dashboard & My Reviews
                 </Link>
               </li>
               <li>
-                <Link href="/trust-score-explained" className="hover:text-teal-400 transition-colors">
-                  Trust Score Methodology
+                <Link href="/user/demo-user" className="hover:text-blue-400 transition-colors">
+                  User Public Profile
                 </Link>
               </li>
               <li>
-                <Link href="/review-guidelines" className="hover:text-teal-400 transition-colors">
-                  Review Verification Policy
+                <Link href="/dashboard/company" className="hover:text-blue-400 transition-colors">
+                  Company Owner Portal
                 </Link>
               </li>
               <li>
-                <Link href="/business-owner-portal" className="hover:text-teal-400 transition-colors">
-                  Business Owner Portal
-                </Link>
-              </li>
-              <li>
-                <Link href="/moderation-appeals" className="hover:text-teal-400 transition-colors">
-                  Dispute & Appeals System
+                <Link href="/admin" className="hover:text-blue-400 transition-colors">
+                  Admin Management Console
                 </Link>
               </li>
             </ul>
           </div>
 
-          {/* Guidelines & Legal */}
+          {/* Guidelines & Policies Column */}
           <div className="space-y-3">
-            <h5 className="font-semibold text-white text-xs uppercase tracking-wider">Policies & Legal</h5>
-            <ul className="space-y-2 text-xs">
+            <h5 className="font-bold text-white text-[11px] uppercase tracking-wider">Transparency & Rules</h5>
+            <ul className="space-y-2 text-[11px]">
               <li>
-                <Link href="/about" className="hover:text-teal-400 transition-colors">
+                <Link href="/about" className="hover:text-blue-400 transition-colors">
                   About WinkBench
                 </Link>
               </li>
               <li>
-                <Link href="/review-guidelines" className="hover:text-teal-400 transition-colors">
+                <Link href="/trust-score-explained" className="hover:text-blue-400 transition-colors">
+                  Trust Score Methodology
+                </Link>
+              </li>
+              <li>
+                <Link href="/review-guidelines" className="hover:text-blue-400 transition-colors">
                   Review Guidelines
                 </Link>
               </li>
               <li>
-                <Link href="/community-guidelines" className="hover:text-teal-400 transition-colors">
-                  Community Guidelines
-                </Link>
-              </li>
-              <li>
-                <Link href="/privacy-policy" className="hover:text-teal-400 transition-colors">
-                  Privacy Policy (Draft)
-                </Link>
-              </li>
-              <li>
-                <Link href="/terms-of-service" className="hover:text-teal-400 transition-colors">
-                  Terms of Service (Draft)
-                </Link>
-              </li>
-              <li>
-                <Link href="/cookie-policy" className="hover:text-teal-400 transition-colors">
-                  Cookie Policy
+                <Link href="/for-businesses" className="hover:text-blue-400 transition-colors">
+                  Claim Company Profile
                 </Link>
               </li>
             </ul>
@@ -178,14 +142,13 @@ export default function Footer() {
 
         </div>
 
-        {/* Bottom copyright & disclaimer */}
-        <div className="mt-12 pt-8 border-t border-navy-900 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-slate-500">
-          <p>© {new Date().getFullYear()} WinkBench.com. All rights reserved. Original platform design & implementation.</p>
-          <div className="flex items-center gap-6">
-            <Link href="/privacy-policy" className="hover:text-slate-400">Privacy</Link>
-            <Link href="/terms-of-service" className="hover:text-slate-400">Terms</Link>
-            <Link href="/cookies" className="hover:text-slate-400">Cookies</Link>
-            <Link href="/contact" className="hover:text-slate-400">Contact</Link>
+        {/* Bottom copyright */}
+        <div className="mt-12 pt-6 border-t border-slate-900 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-slate-500">
+          <p>© {new Date().getFullYear()} WinkBench.com. Hosted on Hostinger. All rights reserved.</p>
+          <div className="flex items-center gap-4">
+            <Link href="/about" className="hover:text-slate-400">About</Link>
+            <Link href="/review-guidelines" className="hover:text-slate-400">Guidelines</Link>
+            <Link href="/directory" className="hover:text-slate-400">Directory</Link>
           </div>
         </div>
       </div>
