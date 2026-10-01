@@ -86,79 +86,132 @@ export default function CompanyDashboardPage() {
   const [detailsSuccess, setDetailsSuccess] = useState(false);
 
   // Handle business reply
-  const handleSendReply = (reviewId: string) => {
+  const handleSendReply = async (reviewId: string) => {
     const text = replyInputs[reviewId];
     if (!text || !text.trim()) return;
 
-    setReviews(reviews.map((r) => {
-      if (r.id === reviewId) {
-        return {
-          ...r,
-          reply: {
-            id: `rep-${Date.now()}`,
-            reviewId,
-            companyId: currentCompany.id,
-            responderName: 'Marcus Vance',
-            responderRole: 'Director of Merchant Operations',
-            content: text.trim(),
-            createdAt: new Date().toISOString(),
-          }
-        };
-      }
-      return r;
-    }));
+    try {
+      const res = await fetch('/api/reviews', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'reply',
+          reviewId,
+          responderName: companyDetails.name || 'Verified Representative',
+          responderRole: 'Merchant Operations',
+          content: text.trim(),
+        }),
+      });
 
-    setReplyInputs({ ...replyInputs, [reviewId]: '' });
-    setReplySuccess(reviewId);
-    setTimeout(() => setReplySuccess(null), 3000);
+      if (res.ok) {
+        setReviews(reviews.map((r) => {
+          if (r.id === reviewId) {
+            return {
+              ...r,
+              reply: {
+                id: `rep-${Date.now()}`,
+                reviewId,
+                companyId: currentCompany.id,
+                responderName: companyDetails.name || 'Verified Representative',
+                responderRole: 'Merchant Operations',
+                content: text.trim(),
+                createdAt: new Date().toISOString(),
+              }
+            };
+          }
+          return r;
+        }));
+
+        setReplyInputs({ ...replyInputs, [reviewId]: '' });
+        setReplySuccess(reviewId);
+        setTimeout(() => setReplySuccess(null), 3000);
+      }
+    } catch (err) {
+      console.error('Failed to post reply:', err);
+    }
   };
 
   // Handle publish announcement
-  const handlePublishAnnouncement = (e: React.FormEvent) => {
+  const handlePublishAnnouncement = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newAnnTitle.trim() || !newAnnContent.trim()) return;
 
-    const created = {
-      id: `ann-${Date.now()}`,
-      title: newAnnTitle,
-      content: newAnnContent,
-      publishedAt: new Date().toISOString(),
-      priority: newAnnPriority,
-    };
+    try {
+      const res = await fetch('/api/announcements', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          companySlug: currentCompany.slug,
+          title: newAnnTitle.trim(),
+          content: newAnnContent.trim(),
+          authorName: companyDetails.name || 'Management',
+          priority: newAnnPriority,
+        }),
+      });
 
-    setAnnouncements([created, ...announcements]);
-    setNewAnnTitle('');
-    setNewAnnContent('');
-    setAnnSuccess(true);
-    setTimeout(() => setAnnSuccess(false), 3000);
+      if (res.ok) {
+        const created = await res.json();
+        setAnnouncements([created, ...announcements]);
+        setNewAnnTitle('');
+        setNewAnnContent('');
+        setAnnSuccess(true);
+        setTimeout(() => setAnnSuccess(false), 3000);
+      }
+    } catch (err) {
+      console.error('Failed to create announcement:', err);
+    }
   };
 
   // Handle publish article
-  const handlePublishArticle = (e: React.FormEvent) => {
+  const handlePublishArticle = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newArtTitle.trim() || !newArtContent.trim()) return;
 
-    const created = {
-      id: `art-${Date.now()}`,
-      title: newArtTitle,
-      summary: newArtSummary || newArtTitle,
-      category: newArtCategory,
-      publishedAt: new Date().toISOString(),
-    };
+    try {
+      const res = await fetch('/api/articles', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          companySlug: currentCompany.slug,
+          title: newArtTitle.trim(),
+          summary: newArtSummary || newArtTitle,
+          content: newArtContent.trim(),
+          authorName: companyDetails.name || 'Editorial Staff',
+          category: newArtCategory || 'Updates',
+        }),
+      });
 
-    setArticles([created, ...articles]);
-    setNewArtTitle('');
-    setNewArtSummary('');
-    setNewArtContent('');
-    setArtSuccess(true);
-    setTimeout(() => setArtSuccess(false), 3000);
+      if (res.ok) {
+        const created = await res.json();
+        setArticles([created, ...articles]);
+        setNewArtTitle('');
+        setNewArtSummary('');
+        setNewArtContent('');
+        setArtSuccess(true);
+        setTimeout(() => setArtSuccess(false), 3000);
+      }
+    } catch (err) {
+      console.error('Failed to publish article:', err);
+    }
   };
 
   // Handle update details
-  const handleSaveDetails = (e: React.FormEvent) => {
+  const handleSaveDetails = async (e: React.FormEvent) => {
     e.preventDefault();
-    setDetailsSuccess(true);
-    setTimeout(() => setDetailsSuccess(false), 3000);
+    try {
+      const res = await fetch(`/api/companies/${currentCompany.slug}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(companyDetails),
+      });
+
+      if (res.ok) {
+        setDetailsSuccess(true);
+        setTimeout(() => setDetailsSuccess(false), 3000);
+      }
+    } catch (err) {
+      console.error('Failed to save company details:', err);
+    }
   };
 
   return (

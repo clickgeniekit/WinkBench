@@ -17,21 +17,21 @@
       "email": "support@aurorapay.example.com",
       "isClaimed": true,
       "isVerified": true,
-      "customerRating": 4.8,
-      "reviewCount": 384,
-      "trustScore": 92,
+      "customerRating": 5,
+      "reviewCount": 1,
+      "trustScore": 82,
       "trustScoreRating": "High",
       "ratingDistribution": {
-        "1": 2,
-        "2": 4,
-        "3": 10,
-        "4": 48,
-        "5": 320
+        "1": 0,
+        "2": 0,
+        "3": 0,
+        "4": 0,
+        "5": 1
       },
       "responseRate": 98,
       "responseTime": "< 4 hours",
       "createdAt": "2023-04-12T10:00:00Z",
-      "updatedAt": "2026-09-15T14:30:00Z"
+      "updatedAt": "2026-10-01T10:56:29.811Z"
     },
     {
       "id": "comp-nordic-host",
@@ -263,6 +263,62 @@
       "responseTime": "< 72 hours",
       "createdAt": "2024-06-01T11:00:00Z",
       "updatedAt": "2026-08-15T12:00:00Z"
+    },
+    {
+      "id": "comp-new-unlisted-service-test-com",
+      "name": "new-unlisted-service-test.com",
+      "slug": "new-unlisted-service-test.com",
+      "tagline": "Customer reviews and reputation for new-unlisted-service-test.com",
+      "description": "new-unlisted-service-test.com has an open business profile on WinkBench. If you have purchased products, contracted services, or dealt with this company, share your honest experience below to help global consumers.",
+      "website": "https://new-unlisted-service-test.com",
+      "category": "Unclassified",
+      "categorySlug": "unclassified",
+      "country": "International",
+      "countryCode": "US",
+      "city": "Global",
+      "isClaimed": false,
+      "isVerified": false,
+      "customerRating": 0,
+      "reviewCount": 0,
+      "trustScore": 50,
+      "trustScoreRating": "Developing",
+      "ratingDistribution": {
+        "1": 0,
+        "2": 0,
+        "3": 0,
+        "4": 0,
+        "5": 0
+      },
+      "createdAt": "2026-10-01T10:46:55.308Z",
+      "updatedAt": "2026-10-01T10:46:55.308Z"
+    },
+    {
+      "id": "comp-example-com",
+      "name": "example.com",
+      "slug": "example.com",
+      "tagline": "Customer reviews and reputation for example.com",
+      "description": "example.com has an open business profile on WinkBench. If you have purchased products, contracted services, or dealt with this company, share your honest experience below to help global consumers.",
+      "website": "https://example.com",
+      "category": "Unclassified",
+      "categorySlug": "unclassified",
+      "country": "International",
+      "countryCode": "US",
+      "city": "Global",
+      "isClaimed": false,
+      "isVerified": false,
+      "customerRating": 0,
+      "reviewCount": 0,
+      "trustScore": 50,
+      "trustScoreRating": "Developing",
+      "ratingDistribution": {
+        "1": 0,
+        "2": 0,
+        "3": 0,
+        "4": 0,
+        "5": 0
+      },
+      "createdAt": "2026-10-01T10:55:07.469Z",
+      "updatedAt": "2026-10-01T10:55:07.469Z"
     }
   ],
   "reviews": [
@@ -440,6 +496,50 @@
   ],
   "claims": [
     {
+      "companyId": "comp-test-business-claim",
+      "companyName": "test-business-claim.com",
+      "applicantName": "Sarah Jenkins",
+      "workEmail": "sarah@test-business-claim.com",
+      "roleInCompany": "Managing Director",
+      "phone": "+1 555 987 6543",
+      "id": "claim-1790852189812",
+      "status": "approved",
+      "submittedAt": "2026-10-01T10:56:29.812Z"
+    },
+    {
+      "companyId": "comp-test-business-claim",
+      "companyName": "test-business-claim.com",
+      "applicantName": "Sarah Jenkins",
+      "workEmail": "sarah@test-business-claim.com",
+      "roleInCompany": "Managing Director",
+      "phone": "+1 555 987 6543",
+      "id": "claim-1790852027129",
+      "status": "approved",
+      "submittedAt": "2026-10-01T10:53:47.129Z"
+    },
+    {
+      "companyId": "comp-test-business-claim",
+      "companyName": "test-business-claim.com",
+      "applicantName": "Sarah Jenkins",
+      "workEmail": "sarah@test-business-claim.com",
+      "roleInCompany": "Managing Director",
+      "phone": "+1 555 987 6543",
+      "id": "claim-1790851723754",
+      "status": "approved",
+      "submittedAt": "2026-10-01T10:48:43.754Z"
+    },
+    {
+      "companyId": "comp-test-business-claim",
+      "companyName": "test-business-claim.com",
+      "applicantName": "Sarah Jenkins",
+      "workEmail": "sarah@test-business-claim.com",
+      "roleInCompany": "Managing Director",
+      "phone": "+1 555 987 6543",
+      "id": "claim-1790851615314",
+      "status": "approved",
+      "submittedAt": "2026-10-01T10:46:55.314Z"
+    },
+    {
       "id": "claim-1",
       "companyId": "comp-apex-legal",
       "companyName": "Apex Global Immigration Law",
@@ -450,5 +550,48 @@
       "status": "pending_review",
       "submittedAt": "2026-09-28T14:00:00Z"
     }
-  ]
+  ],
+  "users": [
+    {
+      "id": "usr-admin-bootstrap",
+      "email": "admin@winkbench.com",
+      "displayName": "WinkBench Administrator",
+      "passwordHash": "3b449f39594e1612e9ff7997f95cfd31:9ee19b51727fbf10ae52809ce246970c335b9b3ec12ef9b4388e8bb8fa46816f5f0635760959c1f9071036a523cc3173e5b55dd98a8d3e48cfb376d9dd1d7f6f",
+      "role": "admin",
+      "countryCode": "US",
+      "isEmailVerified": true,
+      "status": "active",
+      "createdAt": "2026-10-01T10:46:55.094Z",
+      "updatedAt": "2026-10-01T10:46:55.094Z"
+    },
+    {
+      "id": "usr-alex-morris",
+      "email": "alex.morris@example.com",
+      "displayName": "Alex Morris",
+      "passwordHash": "33dfa9c6779bf6633fa1afb1302bbea7:643670d61580e1f34c735951ba8d8fe52313b4d8917a8a751fad7d4f15f9b2188f14e29b78b52f57dd67f9eae74e4ebb43f7aa6a1a446d172ada6bbdea355866",
+      "role": "user",
+      "countryCode": "US",
+      "isEmailVerified": true,
+      "status": "active",
+      "createdAt": "2026-10-01T10:46:55.094Z",
+      "updatedAt": "2026-10-01T10:46:55.094Z"
+    },
+    {
+      "id": "usr-elena-rostova",
+      "email": "elena@apexlegalaustin.example.ca",
+      "displayName": "Elena Rostova",
+      "passwordHash": "801cafc74ba9a0ebc9ec33af1e7cb423:77e26766d2a04a9b66e8fce19d38de58afb2f2ec7fc3fdc6eb99dd124975b7ee7db1dc768401636fce711f1a76f7f2139acfd1112ff5462091b4c3eaa493ce62",
+      "role": "company_owner",
+      "countryCode": "CA",
+      "isEmailVerified": true,
+      "status": "active",
+      "createdAt": "2026-10-01T10:46:55.094Z",
+      "updatedAt": "2026-10-01T10:46:55.094Z"
+    }
+  ],
+  "sessions": [],
+  "notifications": [],
+  "reviewReports": [],
+  "auditLogs": [],
+  "resetTokens": []
 }

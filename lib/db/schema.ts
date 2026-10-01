@@ -381,3 +381,61 @@ export const auditLogs = mysqlTable('audit_logs', {
   ipAddress: varchar('ip_address', { length: 45 }),
   createdAt: datetime('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),
 });
+
+/**
+ * 16. In-App Notifications
+ */
+export const notifications = mysqlTable(
+  'notifications',
+  {
+    id: varchar('id', { length: 36 }).primaryKey(),
+    userId: varchar('user_id', { length: 36 })
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    title: varchar('title', { length: 255 }).notNull(),
+    message: text('message').notNull(),
+    link: varchar('link', { length: 255 }),
+    type: mysqlEnum('type', ['review', 'reply', 'claim', 'moderation', 'system'])
+      .notNull()
+      .default('system'),
+    isRead: boolean('is_read').notNull().default(false),
+    createdAt: datetime('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+  },
+  (table) => ({
+    userIdx: index('idx_notifications_user').on(table.userId),
+    readIdx: index('idx_notifications_read').on(table.userId, table.isRead),
+  })
+);
+
+/**
+ * 17. Password Reset Tokens
+ */
+export const passwordResetTokens = mysqlTable(
+  'password_reset_tokens',
+  {
+    id: varchar('id', { length: 36 }).primaryKey(),
+    userId: varchar('user_id', { length: 36 })
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    tokenHash: varchar('token_hash', { length: 64 }).notNull().unique(),
+    expiresAt: datetime('expires_at').notNull(),
+    usedAt: datetime('used_at'),
+    createdAt: datetime('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+  },
+  (table) => ({
+    tokenIdx: uniqueIndex('idx_pwd_reset_token').on(table.tokenHash),
+    userExpiresIdx: index('idx_pwd_reset_expires').on(table.userId, table.expiresAt),
+  })
+);
+
+/**
+ * 18. Platform Settings
+ */
+export const platformSettings = mysqlTable('platform_settings', {
+  key: varchar('key', { length: 100 }).primaryKey(),
+  valueJson: text('value_json').notNull(),
+  updatedAt: datetime('updated_at')
+    .notNull()
+    .default(sql`CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP`),
+  updatedBy: varchar('updated_by', { length: 36 }),
+});

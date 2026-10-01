@@ -1,3 +1,9 @@
+import {
+  AUTHORITATIVE_CATEGORIES,
+  AuthoritativeCategory,
+  AuthoritativeSubcategory,
+} from './taxonomy/authoritativeTaxonomy';
+
 export interface CategoryDetail {
   id: string;
   name: string;
@@ -5,218 +11,25 @@ export interface CategoryDetail {
   iconName: string;
   description: string;
   subcategories: string[];
+  subcategoriesDetailed: AuthoritativeSubcategory[];
   companyCount: number;
 }
 
-export const GLOBAL_CATEGORIES: CategoryDetail[] = [
-  {
-    id: 'money-insurance',
-    name: 'Money & Insurance',
-    slug: 'money-insurance',
-    iconName: 'CreditCard',
-    description: 'Banks, payment processors, VCC providers, cryptocurrency exchanges, loans, and insurance.',
-    subcategories: [
-      'Payment Gateways & Processors',
-      'Virtual Credit Cards (VCC) & Banking',
-      'Cryptocurrency & Web3 Platforms',
-      'Personal & Business Loans',
-      'Health & Life Insurance',
-      'Forex & Stock Brokers',
-      'Mortgage Brokers',
-    ],
-    companyCount: 3420,
-  },
-  {
-    id: 'electronics-technology',
-    name: 'Electronics & Technology',
-    slug: 'electronics-technology',
-    iconName: 'Cpu',
-    description: 'Cloud hosting, SaaS platforms, developer tools, hardware, and mobile applications.',
-    subcategories: [
-      'Web Hosting & Cloud Servers',
-      'Software as a Service (SaaS)',
-      'Cybersecurity & VPN',
-      'Computer & Mobile Hardware',
-      'AI & Machine Learning Services',
-      'E-commerce Platforms & APIs',
-    ],
-    companyCount: 5210,
-  },
-  {
-    id: 'shopping-retail',
-    name: 'Shopping & Retail',
-    slug: 'shopping-retail',
-    iconName: 'ShoppingBag',
-    description: 'Direct-to-consumer stores, apparel, luxury jewelry, electronics, and digital marketplaces.',
-    subcategories: [
-      'Fashion & Clothing',
-      'Watches & Jewelry',
-      'Consumer Electronics & Gadgets',
-      'Department Stores & Marketplaces',
-      'Shoes & Footwear',
-      'Beauty Products & Skincare',
-    ],
-    companyCount: 8940,
-  },
-  {
-    id: 'business-services',
-    name: 'Business Services',
-    slug: 'business-services',
-    iconName: 'Briefcase',
-    description: 'Corporate advisory, digital marketing, staffing, branding, and merchant solutions.',
-    subcategories: [
-      'Digital Marketing & SEO Agencies',
-      'Recruitment & HR Services',
-      'Accounting & Tax Advisors',
-      'Coworking & Office Spaces',
-      'Print & Packaging Providers',
-    ],
-    companyCount: 2890,
-  },
-  {
-    id: 'home-services',
-    name: 'Home Services & Repairs',
-    slug: 'home-services',
-    iconName: 'Home',
-    description: 'Plumbing, HVAC technicians, electrical, home cleaning, roofing, and remodeling.',
-    subcategories: [
-      'Plumbers & Drain Cleaning',
-      'Heating & Air Conditioning (HVAC)',
-      'Electricians',
-      'Roofing & Siding Contractors',
-      'House Cleaning & Janitorial',
-      'Pest Control Services',
-    ],
-    companyCount: 4120,
-  },
-  {
-    id: 'health-medical',
-    name: 'Health & Medical',
-    slug: 'health-medical',
-    iconName: 'Activity',
-    description: 'Clinics, dental practices, telemedicine, diagnostic laboratories, and pharmacy services.',
-    subcategories: [
-      'Telehealth & Virtual Care',
-      'Dentists & Orthodontists',
-      'Home Diagnostic Testing Kits',
-      'Pharmacies & Supplements',
-      'Mental Health & Counseling',
-      'Opticians & Eye Care',
-    ],
-    companyCount: 2780,
-  },
-  {
-    id: 'travel-vacation',
-    name: 'Travel & Vacation',
-    slug: 'travel-vacation',
-    iconName: 'Plane',
-    description: 'Airlines, hotel booking platforms, car rentals, tour guides, and cruise lines.',
-    subcategories: [
-      'Airlines & Flights',
-      'Hotels, Hostels & Resorts',
-      'Car Rental Agencies',
-      'Tour Guides & Adventure Travel',
-      'Travel Insurance Providers',
-    ],
-    companyCount: 3100,
-  },
-  {
-    id: 'legal-services',
-    name: 'Legal & Immigration Services',
-    slug: 'legal-services',
-    iconName: 'Scale',
-    description: 'Immigration attorneys, corporate legal counsel, trademark registrars, and notarization.',
-    subcategories: [
-      'Immigration & Visa Lawyers',
-      'Corporate & Trademark Law',
-      'Family & Estate Law',
-      'Tax Law & Auditing',
-    ],
-    companyCount: 1650,
-  },
-  {
-    id: 'vehicles-transportation',
-    name: 'Vehicles & Transportation',
-    slug: 'vehicles-transportation',
-    iconName: 'Car',
-    description: 'Car dealerships, vehicle rentals, EV charging networks, and freight logistics.',
-    subcategories: [
-      'Auto Dealerships (New & Used)',
-      'Auto Repair & Mechanics',
-      'EV Charging Stations & Fleets',
-      'Motorcycle & Powersports',
-      'Towing & Roadside Assistance',
-    ],
-    companyCount: 2340,
-  },
-  {
-    id: 'utilities-energy',
-    name: 'Utilities & Renewable Energy',
-    slug: 'utilities-energy',
-    iconName: 'Zap',
-    description: 'Residential solar installations, home batteries, electricity providers, and green power.',
-    subcategories: [
-      'Solar Panel Installers',
-      'Home Battery Storage Systems',
-      'Electric Utilities',
-      'Broadband & Internet Providers',
-    ],
-    companyCount: 1980,
-  },
-  {
-    id: 'education-training',
-    name: 'Education & Training',
-    slug: 'education-training',
-    iconName: 'GraduationCap',
-    description: 'Online learning bootcamps, language institutions, driving schools, and tutoring.',
-    subcategories: [
-      'Online Coding & Tech Bootcamps',
-      'Language Learning Schools',
-      'Professional Certification Programs',
-      'Universities & Colleges',
-    ],
-    companyCount: 1890,
-  },
-  {
-    id: 'food-beverages',
-    name: 'Food & Beverages',
-    slug: 'food-beverages',
-    iconName: 'Coffee',
-    description: 'Specialty coffee roasters, gourmet bakeries, breweries, and organic food distributors.',
-    subcategories: [
-      'Specialty Coffee & Tea',
-      'Wineries & Craft Breweries',
-      'Meal Kits & Fresh Subscriptions',
-      'Gourmet Food & Snacks',
-    ],
-    companyCount: 2450,
-  },
-  {
-    id: 'animals-pets',
-    name: 'Animals & Pets',
-    slug: 'animals-pets',
-    iconName: 'Dog',
-    description: 'Veterinary clinics, pet food delivery, dog training, and pet insurance.',
-    subcategories: [
-      'Veterinarians & Animal Hospitals',
-      'Pet Food & Natural Treats',
-      'Pet Insurance',
-      'Dog Training & Boarding',
-    ],
-    companyCount: 1420,
-  },
-  {
-    id: 'restaurants-bars',
-    name: 'Restaurants & Hospitality',
-    slug: 'restaurants-bars',
-    iconName: 'Utensils',
-    description: 'Casual restaurants, cafes, fine dining, catering, and food delivery services.',
-    subcategories: [
-      'Casual Dining & Bistros',
-      'Pizzerias & Italian Dining',
-      'Coffee Shops & Bakeries',
-      'Catering & Event Dining',
-    ],
-    companyCount: 4890,
-  },
-];
+/**
+ * Single Source of Truth for frontend categories:
+ * Derived directly from the authoritative 22 main categories and 189 subcategories.
+ */
+export const GLOBAL_CATEGORIES: CategoryDetail[] = AUTHORITATIVE_CATEGORIES.map((cat) => ({
+  id: cat.id,
+  name: cat.name,
+  slug: cat.slug,
+  iconName: cat.iconName || 'Building2',
+  description: `Find top-rated businesses, verified reviews, and customer ratings in ${cat.name}.`,
+  subcategories: cat.subcategories.map((s) => s.name),
+  subcategoriesDetailed: cat.subcategories,
+  companyCount: 0,
+}));
+
+export function getCategoryBySlug(slug: string): CategoryDetail | undefined {
+  return GLOBAL_CATEGORIES.find((c) => c.slug === slug);
+}

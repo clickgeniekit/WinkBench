@@ -21,6 +21,10 @@ export interface AuthoritativeCategory {
   subcategories: AuthoritativeSubcategory[];
 }
 
+export function getCategoryBySlug(slug: string): AuthoritativeCategory | undefined {
+  return AUTHORITATIVE_CATEGORIES.find((c) => c.slug === slug);
+}
+
 export const AUTHORITATIVE_CATEGORIES: AuthoritativeCategory[] = [
   {
     id: "cat_01_animals_pets",

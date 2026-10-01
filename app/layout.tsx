@@ -57,13 +57,29 @@ export default function RootLayout({
             __html: `
               (function() {
                 try {
-                  var _f = window.fetch;
-                  Object.defineProperty(window, 'fetch', {
-                    get: function() { return _f; },
-                    set: function(v) { _f = v; },
-                    configurable: true,
-                    enumerable: true
-                  });
+                  var _currentFetch = window.fetch;
+                  var _getter = function() { return _currentFetch; };
+                  var _setter = function(v) { _currentFetch = v; };
+
+                  try {
+                    Object.defineProperty(window, 'fetch', {
+                      get: _getter,
+                      set: _setter,
+                      configurable: true,
+                      enumerable: true
+                    });
+                  } catch (e) {}
+
+                  try {
+                    if (typeof Window !== 'undefined' && Window.prototype) {
+                      Object.defineProperty(Window.prototype, 'fetch', {
+                        get: _getter,
+                        set: _setter,
+                        configurable: true,
+                        enumerable: true
+                      });
+                    }
+                  } catch (e) {}
                 } catch (e) {}
               })();
             `,

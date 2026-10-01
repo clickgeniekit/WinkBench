@@ -1,331 +1,569 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { 
-  ShieldCheck, 
-  Building2, 
-  MessageSquare, 
-  Users, 
-  CheckCircle2, 
-  XCircle, 
-  Search, 
-  AlertTriangle, 
-  Database, 
-  Server,
+import { useRouter } from 'next/navigation';
+import {
+  ShieldCheck,
+  Building2,
+  MessageSquare,
+  Users,
+  CheckCircle2,
+  XCircle,
+  Search,
+  AlertTriangle,
+  Database,
   Layers,
   FileCheck,
-  Eye,
-  Sliders
+  Trash2,
+  Lock,
+  RefreshCw,
+  LogOut,
+  UserCheck,
+  UserX,
+  History,
 } from 'lucide-react';
 import StarRating from '@/components/StarRating';
 import TrustBadge from '@/components/TrustBadge';
-import { DEMO_COMPANIES, DEMO_REVIEWS } from '@/lib/demoData';
+import { AUTHORITATIVE_CATEGORIES } from '@/lib/taxonomy/authoritativeTaxonomy';
+import { Company, Review, ClaimRequest, ReviewReport, AuditLogEntry, UserAccount } from '@/types';
 
 export default function AdminDashboardPage() {
-  const [activeTab, setActiveTab] = useState<'claims' | 'reviews' | 'companies' | 'system'>('claims');
+  const router = useRouter();
+  const [activeTab, setActiveTab] = useState<'claims' | 'reviews' | 'companies' | 'users' | 'audit' | 'system'>('claims');
 
-  // Claims state
-  const [claims, setClaims] = useState([
-    {
-      id: 'claim-101',
-      companyId: 'comp-example-domain',
-      companyName: 'example.com',
-      applicantName: 'Jordan Miller',
-      workEmail: 'admin@example.com',
-      roleInCompany: 'Founder & CEO',
-      phone: '+1 555 123 4567',
-      docType: 'Corporate Domain Email Match',
-      submittedAt: '2026-09-29T10:00:00Z',
-      status: 'pending',
-    },
-    {
-      id: 'claim-102',
-      companyId: 'comp-apex-legal',
-      companyName: 'Apex Global Immigration Law',
-      applicantName: 'Elena Rostova',
-      workEmail: 'elena@apexlegalaustin.example.ca',
-      roleInCompany: 'Managing Partner',
-      phone: '+1 416 555 7890',
-      docType: 'Bar Council Certificate',
-      submittedAt: '2026-09-28T14:00:00Z',
-      status: 'pending',
-    }
-  ]);
-  const [claimActionSuccess, setClaimActionSuccess] = useState<string | null>(null);
+  // Auth state
+  const [currentUser, setCurrentUser] = useState<UserAccount | null>(null);
+  const [authChecked, setAuthChecked] = useState(false);
+  const [unauthorized, setUnauthorized] = useState(false);
 
-  // Reviews state
-  const [moderationReviews, setModerationReviews] = useState(DEMO_REVIEWS);
-  const [companiesList, setCompaniesList] = useState(DEMO_COMPANIES);
+  // Data states
+  const [claims, setClaims] = useState<ClaimRequest[]>([]);
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [reports, setReports] = useState<ReviewReport[]>([]);
+  const [companiesList, setCompaniesList] = useState<Company[]>([]);
+  const [usersList, setUsersList] = useState<Array<Partial<UserAccount>>>([]);
+  const [auditLogs, setAuditLogs] = useState<AuditLogEntry[]>([]);
+
+  // Search & feedback state
   const [companySearch, setCompanySearch] = useState('');
+  const [userSearch, setUserSearch] = useState('');
+  const [actionSuccess, setActionSuccess] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
 
-  // Handle Approve Claim
-  const handleApproveClaim = (claimId: string, companyName: string) => {
-    setClaims(claims.map(c => c.id === claimId ? { ...c, status: 'approved' } : c));
-    setCompaniesList(companiesList.map(c => {
-      if (c.slug === companyName || c.name === companyName) {
-        return { ...c, isClaimed: true, isVerified: true };
+  // Check admin authorization on mount
+  useEffect(() => {
+    async function checkAdminAuth() {
+      try {
+        const res = await fetch('/api/auth/me');
+        const data = await res.json();
+
+        if (!data.authenticated || !data.user || data.user.role !== 'admin') {
+          setUnauthorized(true);
+        } else {
+          setCurrentUser(data.user);
+          loadAdminData();
+        }
+      } catch (err) {
+        console.error('Failed to verify admin status:', err);
+        setUnauthorized(true);
+      } finally {
+        setAuthChecked(true);
       }
-      return c;
-    }));
-    setClaimActionSuccess(`Claim for ${companyName} has been approved! Company is now Verified & Claimed.`);
-    setTimeout(() => setClaimActionSuccess(null), 3500);
-  };
+    }
 
-  // Handle Reject Claim
-  const handleRejectClaim = (claimId: string) => {
-    setClaims(claims.map(c => c.id === claimId ? { ...c, status: 'rejected' } : c));
-  };
+    checkAdminAuth();
+  }, []);
 
-  // Toggle company verification
-  const handleToggleVerified = (companyId: string) => {
-    setCompaniesList(companiesList.map(c => {
-      if (c.id === companyId) {
-        return { ...c, isVerified: !c.isVerified };
+  async function loadAdminData() {
+    try {
+      const [claimsRes, reviewsRes, compRes, usersRes, logsRes] = await Promise.all([
+        fetch('/api/admin/claims'),
+        fetch('/api/admin/reviews'),
+        fetch('/api/admin/companies'),
+        fetch('/api/admin/users'),
+        fetch('/api/admin/audit-logs'),
+      ]);
+
+      if (claimsRes.ok) {
+        const d = await claimsRes.json();
+        setClaims(d.claims || []);
       }
-      return c;
-    }));
+      if (reviewsRes.ok) {
+        const d = await reviewsRes.json();
+        setReviews(d.reviews || []);
+        setReports(d.reports || []);
+      }
+      if (compRes.ok) {
+        const d = await compRes.json();
+        setCompaniesList(d.companies || []);
+      }
+      if (usersRes.ok) {
+        const d = await usersRes.json();
+        setUsersList(d.users || []);
+      }
+      if (logsRes.ok) {
+        const d = await logsRes.json();
+        setAuditLogs(d.logs || []);
+      }
+    } catch (err) {
+      console.error('Error fetching admin data:', err);
+    }
+  }
+
+  // Claim actions
+  const handleClaimStatus = async (claimId: string, status: 'approved' | 'rejected') => {
+    setActionSuccess(null);
+    setActionError(null);
+    try {
+      const res = await fetch('/api/admin/claims', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ claimId, status }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        setActionError(data.error || 'Failed to update claim.');
+      } else {
+        setActionSuccess(`Claim ${status} successfully.`);
+        loadAdminData();
+      }
+    } catch {
+      setActionError('Network error while processing claim.');
+    }
   };
 
-  const filteredCompanies = companiesList.filter(c => 
-    c.name.toLowerCase().includes(companySearch.toLowerCase()) ||
-    c.slug.toLowerCase().includes(companySearch.toLowerCase()) ||
-    c.category.toLowerCase().includes(companySearch.toLowerCase())
+  // Review actions
+  const handleReviewAction = async (reviewId: string, action: 'published' | 'removed') => {
+    setActionSuccess(null);
+    try {
+      const res = await fetch('/api/admin/reviews', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'update_review_status', reviewId, status: action }),
+      });
+      if (res.ok) {
+        setActionSuccess(`Review marked as ${action}.`);
+        loadAdminData();
+      }
+    } catch {
+      setActionError('Failed to update review status.');
+    }
+  };
+
+  // User actions
+  const handleUserStatus = async (userId: string, status: 'active' | 'suspended') => {
+    setActionSuccess(null);
+    try {
+      const res = await fetch('/api/admin/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, status }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        setActionError(data.error || 'Failed to update user status.');
+      } else {
+        setActionSuccess(`User status updated to ${status}.`);
+        loadAdminData();
+      }
+    } catch {
+      setActionError('Failed to update user status.');
+    }
+  };
+
+  // Company classification
+  const handleClassifyCompany = async (companySlug: string, category: string, categorySlug: string) => {
+    try {
+      const res = await fetch('/api/admin/companies', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'classify', companySlug, category, categorySlug }),
+      });
+      if (res.ok) {
+        setActionSuccess(`Company reclassified to ${category}.`);
+        loadAdminData();
+      }
+    } catch {
+      setActionError('Failed to classify company.');
+    }
+  };
+
+  if (!authChecked) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 py-20 text-center text-xs text-slate-500">
+        Authenticating administrative security context...
+      </div>
+    );
+  }
+
+  if (unauthorized) {
+    return (
+      <div className="max-w-md mx-auto px-4 py-20 text-center space-y-4">
+        <div className="bg-white rounded-3xl border border-slate-200 p-8 shadow-sm space-y-4">
+          <Lock className="w-12 h-12 text-rose-600 mx-auto" />
+          <h1 className="text-xl font-extrabold text-navy-950">Administrative Access Denied</h1>
+          <p className="text-xs text-slate-500 leading-relaxed">
+            This management console requires verified administrator privileges. If you are a platform administrator, please log in with your administrative credentials.
+          </p>
+          <div className="pt-2">
+            <Link
+              href="/login"
+              className="inline-block px-5 py-2.5 bg-navy-900 text-white font-bold text-xs rounded-xl hover:bg-navy-800"
+            >
+              Log In as Administrator
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const filteredCompanies = companiesList.filter(
+    (c) =>
+      c.name.toLowerCase().includes(companySearch.toLowerCase()) ||
+      c.slug.toLowerCase().includes(companySearch.toLowerCase())
+  );
+
+  const filteredUsers = usersList.filter(
+    (u) =>
+      u.email?.toLowerCase().includes(userSearch.toLowerCase()) ||
+      u.displayName?.toLowerCase().includes(userSearch.toLowerCase())
   );
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
-      
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 pb-6">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="text-[11px] font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200 uppercase tracking-wider">
-              Hostinger Central Administration
+      <div className="bg-navy-950 text-white rounded-3xl p-6 sm:p-8 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="text-[10px] font-bold uppercase tracking-widest text-teal-400">
+              Admin Console · Hostinger Runtime Engine
             </span>
           </div>
-          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">
-            WinkBench Admin Console
-          </h1>
-          <p className="text-xs text-slate-500 mt-1">
-            Manage company profiles, review dispute moderation, verify domain claims, and audit platform security.
+          <h1 className="text-2xl font-black">Platform Administration & Compliance</h1>
+          <p className="text-xs text-slate-400">
+            Authenticated as <strong>{currentUser?.displayName}</strong> ({currentUser?.email})
           </p>
         </div>
 
-        <div className="flex items-center gap-2 self-start md:self-auto">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs font-bold">
-            <Server className="w-3.5 h-3.5 text-emerald-600" />
-            Hostinger Runtime: Healthy
-          </span>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => loadAdminData()}
+            className="px-3.5 py-2 bg-navy-900 hover:bg-navy-800 border border-navy-800 text-xs font-semibold rounded-xl text-slate-300 hover:text-white flex items-center gap-1.5 transition-colors"
+          >
+            <RefreshCw className="w-3.5 h-3.5" />
+            <span>Refresh Data</span>
+          </button>
+          <button
+            onClick={async () => {
+              await fetch('/api/auth/logout', { method: 'POST' });
+              router.push('/login');
+            }}
+            className="px-3.5 py-2 bg-rose-950/40 hover:bg-rose-900/60 border border-rose-900/50 text-rose-300 text-xs font-semibold rounded-xl flex items-center gap-1.5 transition-colors"
+          >
+            <LogOut className="w-3.5 h-3.5" />
+            <span>Sign Out</span>
+          </button>
         </div>
       </div>
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs">
-          <span className="text-[11px] font-semibold text-slate-500 uppercase">Active Companies</span>
-          <p className="text-2xl font-black text-slate-900 mt-1">{companiesList.length + 140}</p>
-          <span className="text-[11px] text-slate-400">Indexed & queryable</span>
-        </div>
-
-        <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs">
-          <span className="text-[11px] font-semibold text-slate-500 uppercase">Total Reviews</span>
-          <p className="text-2xl font-black text-blue-600 mt-1">{moderationReviews.length + 3840}</p>
-          <span className="text-[11px] text-slate-400">Published customer reviews</span>
-        </div>
-
-        <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs">
-          <span className="text-[11px] font-semibold text-slate-500 uppercase">Pending Claims</span>
-          <p className="text-2xl font-black text-amber-600 mt-1">
-            {claims.filter(c => c.status === 'pending').length}
-          </p>
-          <span className="text-[11px] text-slate-400">Awaiting document audit</span>
-        </div>
-
-        <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs">
-          <span className="text-[11px] font-semibold text-slate-500 uppercase">Global Countries</span>
-          <p className="text-2xl font-black text-emerald-600 mt-1">50+</p>
-          <span className="text-[11px] text-slate-400">Active regional markets</span>
-        </div>
-      </div>
-
-      {claimActionSuccess && (
-        <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-800 text-xs font-semibold flex items-center gap-2">
-          <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-          <span>{claimActionSuccess}</span>
+      {/* Global alert feedback */}
+      {actionSuccess && (
+        <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-2xl text-emerald-800 text-xs flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+            <span>{actionSuccess}</span>
+          </div>
+          <button onClick={() => setActionSuccess(null)} className="text-emerald-600 font-bold hover:underline">
+            Dismiss
+          </button>
         </div>
       )}
 
-      {/* Admin Tabs */}
-      <div className="flex items-center gap-2 border-b border-slate-200 text-xs font-bold">
+      {actionError && (
+        <div className="p-3 bg-rose-50 border border-rose-200 rounded-2xl text-rose-800 text-xs flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
+            <span>{actionError}</span>
+          </div>
+          <button onClick={() => setActionError(null)} className="text-rose-600 font-bold hover:underline">
+            Dismiss
+          </button>
+        </div>
+      )}
+
+      {/* Tabs */}
+      <div className="flex items-center gap-2 border-b border-slate-200 pb-3 overflow-x-auto text-xs font-bold">
         <button
           onClick={() => setActiveTab('claims')}
-          className={`pb-3 px-3 transition-colors border-b-2 flex items-center gap-1.5 ${
-            activeTab === 'claims'
-              ? 'border-blue-600 text-blue-600'
-              : 'border-transparent text-slate-500 hover:text-slate-900'
+          className={`px-4 py-2 rounded-xl transition-all flex items-center gap-2 ${
+            activeTab === 'claims' ? 'bg-navy-900 text-white' : 'text-slate-600 hover:bg-slate-100'
           }`}
         >
           <FileCheck className="w-4 h-4" />
-          Business Claims ({claims.filter(c => c.status === 'pending').length} pending)
-        </button>
-
-        <button
-          onClick={() => setActiveTab('companies')}
-          className={`pb-3 px-3 transition-colors border-b-2 flex items-center gap-1.5 ${
-            activeTab === 'companies'
-              ? 'border-blue-600 text-blue-600'
-              : 'border-transparent text-slate-500 hover:text-slate-900'
-          }`}
-        >
-          <Building2 className="w-4 h-4" />
-          Company Directory Catalog
+          <span>Claims & Ownership ({claims.length})</span>
         </button>
 
         <button
           onClick={() => setActiveTab('reviews')}
-          className={`pb-3 px-3 transition-colors border-b-2 flex items-center gap-1.5 ${
-            activeTab === 'reviews'
-              ? 'border-blue-600 text-blue-600'
-              : 'border-transparent text-slate-500 hover:text-slate-900'
+          className={`px-4 py-2 rounded-xl transition-all flex items-center gap-2 ${
+            activeTab === 'reviews' ? 'bg-navy-900 text-white' : 'text-slate-600 hover:bg-slate-100'
           }`}
         >
           <MessageSquare className="w-4 h-4" />
-          Review Moderation
+          <span>Review Moderation ({reviews.length})</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('companies')}
+          className={`px-4 py-2 rounded-xl transition-all flex items-center gap-2 ${
+            activeTab === 'companies' ? 'bg-navy-900 text-white' : 'text-slate-600 hover:bg-slate-100'
+          }`}
+        >
+          <Building2 className="w-4 h-4" />
+          <span>Companies & Taxonomy ({companiesList.length})</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('users')}
+          className={`px-4 py-2 rounded-xl transition-all flex items-center gap-2 ${
+            activeTab === 'users' ? 'bg-navy-900 text-white' : 'text-slate-600 hover:bg-slate-100'
+          }`}
+        >
+          <Users className="w-4 h-4" />
+          <span>Users & Access ({usersList.length})</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('audit')}
+          className={`px-4 py-2 rounded-xl transition-all flex items-center gap-2 ${
+            activeTab === 'audit' ? 'bg-navy-900 text-white' : 'text-slate-600 hover:bg-slate-100'
+          }`}
+        >
+          <History className="w-4 h-4" />
+          <span>Security Audit Logs</span>
         </button>
 
         <button
           onClick={() => setActiveTab('system')}
-          className={`pb-3 px-3 transition-colors border-b-2 flex items-center gap-1.5 ${
-            activeTab === 'system'
-              ? 'border-blue-600 text-blue-600'
-              : 'border-transparent text-slate-500 hover:text-slate-900'
+          className={`px-4 py-2 rounded-xl transition-all flex items-center gap-2 ${
+            activeTab === 'system' ? 'bg-navy-900 text-white' : 'text-slate-600 hover:bg-slate-100'
           }`}
         >
           <Database className="w-4 h-4" />
-          Hostinger Database & Storage
+          <span>Hostinger Database Status</span>
         </button>
       </div>
 
-      {/* TAB 1: Business Claims Queue */}
+      {/* TAB 1: Claims */}
       {activeTab === 'claims' && (
         <div className="space-y-4">
-          <div className="flex items-center justify-between text-xs text-slate-500">
-            <p>Verify that the work email domain matches the business website before approving.</p>
-            <span className="font-semibold text-slate-700">Least-privilege verification protocol active</span>
-          </div>
+          <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs">
+            <h2 className="text-base font-bold text-navy-950 mb-1">Company Ownership Claims</h2>
+            <p className="text-xs text-slate-500 mb-6">
+              Review corporate domain email matches, business registration filings, and legal claims.
+            </p>
 
-          <div className="space-y-4">
-            {claims.map((claim) => (
-              <div key={claim.id} className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-4">
-                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold text-base text-slate-900">{claim.companyName}</span>
-                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                        claim.status === 'approved' ? 'bg-emerald-100 text-emerald-800' :
-                        claim.status === 'rejected' ? 'bg-rose-100 text-rose-800' :
-                        'bg-amber-100 text-amber-800'
+            {claims.length > 0 ? (
+              <div className="space-y-4">
+                {claims.map((claim) => (
+                  <div key={claim.id} className="p-5 border border-slate-200 rounded-2xl space-y-3">
+                    <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2">
+                      <div>
+                        <span className="font-extrabold text-sm text-navy-950">{claim.companyName}</span>
+                        <span className="text-[11px] text-slate-400 block">
+                          Submitted {new Date(claim.submittedAt).toLocaleDateString()}
+                        </span>
+                      </div>
+                      <span className={`px-2.5 py-1 rounded-full text-[11px] font-bold self-start sm:self-auto ${
+                        claim.status === 'approved'
+                          ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                          : claim.status === 'rejected'
+                          ? 'bg-rose-50 text-rose-800 border border-rose-200'
+                          : 'bg-amber-50 text-amber-800 border border-amber-200'
                       }`}>
                         {claim.status.toUpperCase()}
                       </span>
                     </div>
-                    <p className="text-xs text-slate-500 mt-1">
-                      Applicant: <strong>{claim.applicantName}</strong> ({claim.roleInCompany})
-                    </p>
-                    <p className="text-xs text-slate-500">
-                      Work Email: <span className="font-mono text-blue-700 font-semibold">{claim.workEmail}</span>
-                      {claim.phone && <span> · Phone: {claim.phone}</span>}
-                    </p>
-                  </div>
 
-                  {claim.status === 'pending' && (
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => handleApproveClaim(claim.id, claim.companyName)}
-                        className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl transition-colors flex items-center gap-1.5 shadow-2xs"
-                      >
-                        <CheckCircle2 className="w-4 h-4" />
-                        Approve & Verify
-                      </button>
-                      <button
-                        onClick={() => handleRejectClaim(claim.id)}
-                        className="px-4 py-2 border border-slate-200 hover:bg-slate-50 text-rose-600 font-bold text-xs rounded-xl transition-colors"
-                      >
-                        Reject
-                      </button>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs bg-slate-50 p-3.5 rounded-xl">
+                      <div>
+                        <span className="text-slate-400 block text-[10px]">Applicant:</span>
+                        <span className="font-semibold text-slate-800">{claim.applicantName}</span>
+                      </div>
+                      <div>
+                        <span className="text-slate-400 block text-[10px]">Work Email:</span>
+                        <span className="font-mono text-slate-800">{claim.workEmail}</span>
+                      </div>
+                      <div>
+                        <span className="text-slate-400 block text-[10px]">Role / Title:</span>
+                        <span className="font-semibold text-slate-800">{claim.roleInCompany}</span>
+                      </div>
                     </div>
-                  )}
-                </div>
 
-                <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs text-slate-400">
-                  <span>Verification Evidence: {claim.docType}</span>
-                  <span>Submitted: {new Date(claim.submittedAt).toLocaleDateString()}</span>
-                </div>
+                    {claim.status === 'pending_review' && (
+                      <div className="flex items-center gap-2 pt-2">
+                        <button
+                          onClick={() => handleClaimStatus(claim.id, 'approved')}
+                          className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl flex items-center gap-1.5 transition-colors shadow-xs"
+                        >
+                          <CheckCircle2 className="w-3.5 h-3.5" />
+                          <span>Approve & Verify Ownership</span>
+                        </button>
+                        <button
+                          onClick={() => handleClaimStatus(claim.id, 'rejected')}
+                          className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-xl flex items-center gap-1.5 transition-colors"
+                        >
+                          <XCircle className="w-3.5 h-3.5" />
+                          <span>Reject Claim</span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ))}
               </div>
-            ))}
+            ) : (
+              <div className="p-8 text-center text-xs text-slate-400">No ownership claims pending.</div>
+            )}
           </div>
         </div>
       )}
 
-      {/* TAB 2: Company Catalog Manager */}
+      {/* TAB 2: Reviews Moderation */}
+      {activeTab === 'reviews' && (
+        <div className="space-y-6">
+          <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs space-y-4">
+            <h2 className="text-base font-bold text-navy-950">Review Moderation Queue</h2>
+            <div className="space-y-4">
+              {reviews.map((rev) => (
+                <div key={rev.id} className="p-5 border border-slate-200 rounded-2xl space-y-3">
+                  <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2 border-b border-slate-100 pb-2">
+                    <div>
+                      <span className="font-bold text-sm text-navy-950">{rev.companyName}</span>
+                      <span className="text-[11px] text-slate-400 block">
+                        By {rev.userDisplayName} · {new Date(rev.createdAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <StarRating rating={rev.rating} size="sm" />
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                        rev.status === 'published'
+                          ? 'bg-emerald-50 text-emerald-800'
+                          : rev.status === 'removed'
+                          ? 'bg-rose-50 text-rose-800'
+                          : 'bg-amber-50 text-amber-800'
+                      }`}>
+                        {rev.status}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <h3 className="font-bold text-xs text-slate-900">{rev.title}</h3>
+                    <p className="text-xs text-slate-600 leading-relaxed">{rev.content}</p>
+                  </div>
+
+                  <div className="flex items-center gap-2 pt-1">
+                    {rev.status !== 'published' && (
+                      <button
+                        onClick={() => handleReviewAction(rev.id, 'published')}
+                        className="px-3 py-1.5 bg-emerald-600 text-white font-bold text-xs rounded-xl hover:bg-emerald-700 transition-colors"
+                      >
+                        Approve / Publish
+                      </button>
+                    )}
+                    {rev.status !== 'removed' && (
+                      <button
+                        onClick={() => handleReviewAction(rev.id, 'removed')}
+                        className="px-3 py-1.5 bg-rose-600 text-white font-bold text-xs rounded-xl hover:bg-rose-700 transition-colors"
+                      >
+                        Remove Violating Review
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* TAB 3: Companies & Taxonomy */}
       {activeTab === 'companies' && (
-        <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-4">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <h3 className="font-bold text-sm text-slate-900">Registered & Dynamically Created Companies</h3>
-            <div className="relative w-full sm:w-72">
+        <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs space-y-6">
+          <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+            <div>
+              <h2 className="text-base font-bold text-navy-950">Company Directory & Taxonomy Assignment</h2>
+              <p className="text-xs text-slate-500">
+                Classify companies into the approved 22 authoritative categories and toggle verified badges.
+              </p>
+            </div>
+            <div className="relative max-w-xs w-full">
               <input
                 type="text"
-                placeholder="Search domain or company..."
+                placeholder="Search company or domain..."
                 value={companySearch}
                 onChange={(e) => setCompanySearch(e.target.value)}
-                className="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg"
+                className="w-full pl-8 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs"
               />
               <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" />
             </div>
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs border-collapse">
-              <thead>
-                <tr className="border-b border-slate-200 text-slate-400 uppercase text-[10px]">
-                  <th className="py-2.5">Company / Domain</th>
-                  <th className="py-2.5">Category</th>
-                  <th className="py-2.5">Country</th>
-                  <th className="py-2.5">Customer Rating</th>
-                  <th className="py-2.5">Trust Score</th>
-                  <th className="py-2.5">Status</th>
-                  <th className="py-2.5 text-right">Actions</th>
+            <table className="w-full text-left text-xs">
+              <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold">
+                <tr>
+                  <th className="p-3">Company / Domain</th>
+                  <th className="p-3">Current Category</th>
+                  <th className="p-3">Assign Authoritative Category</th>
+                  <th className="p-3">Rating</th>
+                  <th className="p-3">Verified Status</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {filteredCompanies.map((c) => (
-                  <tr key={c.id} className="hover:bg-slate-50">
-                    <td className="py-3 font-bold text-slate-900">
-                      <Link href={`/company/${c.slug}`} className="hover:text-blue-600">
+                  <tr key={c.id} className="hover:bg-slate-50/70">
+                    <td className="p-3 font-semibold text-slate-900">
+                      <Link href={`/company/${c.slug}`} className="hover:text-blue-600 underline">
                         {c.name}
                       </Link>
                     </td>
-                    <td className="py-3 text-slate-600">{c.category}</td>
-                    <td className="py-3 text-slate-500">{c.countryCode}</td>
-                    <td className="py-3 font-semibold text-slate-800">{c.customerRating} ★ ({c.reviewCount})</td>
-                    <td className="py-3">
-                      <TrustBadge score={c.trustScore} ratingTier={c.trustScoreRating} size="sm" />
+                    <td className="p-3 text-slate-600">
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-100 text-slate-700">
+                        {c.category}
+                      </span>
                     </td>
-                    <td className="py-3">
-                      {c.isVerified ? (
-                        <span className="text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded text-[10px]">Verified</span>
-                      ) : (
-                        <span className="text-slate-500 bg-slate-100 px-2 py-0.5 rounded text-[10px]">Unclaimed</span>
-                      )}
-                    </td>
-                    <td className="py-3 text-right">
-                      <button
-                        onClick={() => handleToggleVerified(c.id)}
-                        className="px-2.5 py-1 text-[11px] font-semibold border border-slate-200 rounded hover:bg-slate-100"
+                    <td className="p-3">
+                      <select
+                        value={c.categorySlug || ''}
+                        onChange={(e) => {
+                          const cat = AUTHORITATIVE_CATEGORIES.find((cat) => cat.slug === e.target.value);
+                          if (cat) {
+                            handleClassifyCompany(c.slug, cat.name, cat.slug);
+                          }
+                        }}
+                        className="p-1.5 bg-white border border-slate-200 rounded-lg text-xs"
                       >
-                        {c.isVerified ? 'Revoke Verified' : 'Mark Verified'}
-                      </button>
+                        <option value="">-- Choose Category --</option>
+                        {AUTHORITATIVE_CATEGORIES.map((cat) => (
+                          <option key={cat.id} value={cat.slug}>
+                            {cat.name}
+                          </option>
+                        ))}
+                      </select>
+                    </td>
+                    <td className="p-3 font-semibold">
+                      {c.customerRating} ★ ({c.reviewCount})
+                    </td>
+                    <td className="p-3">
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                        c.isVerified ? 'bg-emerald-50 text-emerald-800' : 'bg-slate-100 text-slate-500'
+                      }`}>
+                        {c.isVerified ? 'Verified' : 'Unverified'}
+                      </span>
                     </td>
                   </tr>
                 ))}
@@ -335,69 +573,148 @@ export default function AdminDashboardPage() {
         </div>
       )}
 
-      {/* TAB 3: Review Moderation */}
-      {activeTab === 'reviews' && (
-        <div className="space-y-4">
-          {moderationReviews.map((rev) => (
-            <div key={rev.id} className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-3">
-              <div className="flex items-start justify-between">
-                <div>
-                  <span className="font-bold text-sm text-slate-900">{rev.userDisplayName}</span>
-                  <span className="text-xs text-slate-400 ml-2">reviewed <strong>{rev.companyName}</strong></span>
-                  <div className="flex items-center gap-2 mt-1">
-                    <StarRating rating={rev.rating} size="sm" showNumber />
-                    <span className="text-xs text-slate-400">· {new Date(rev.createdAt).toLocaleDateString()}</span>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <span className="px-2 py-0.5 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded text-[10px] font-bold">
-                    Active & Published
-                  </span>
-                </div>
-              </div>
-
-              <h4 className="font-bold text-xs text-slate-900">{rev.title}</h4>
-              <p className="text-xs text-slate-600 leading-relaxed">{rev.content}</p>
+      {/* TAB 4: Users Management */}
+      {activeTab === 'users' && (
+        <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs space-y-6">
+          <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+            <div>
+              <h2 className="text-base font-bold text-navy-950">User Account Management</h2>
+              <p className="text-xs text-slate-500">View registered accounts, verify credentials, and manage suspensions.</p>
             </div>
-          ))}
+            <div className="relative max-w-xs w-full">
+              <input
+                type="text"
+                placeholder="Search email or name..."
+                value={userSearch}
+                onChange={(e) => setUserSearch(e.target.value)}
+                className="w-full pl-8 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs"
+              />
+              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" />
+            </div>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold">
+                <tr>
+                  <th className="p-3">User</th>
+                  <th className="p-3">Email</th>
+                  <th className="p-3">Role</th>
+                  <th className="p-3">Status</th>
+                  <th className="p-3">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {filteredUsers.map((u) => (
+                  <tr key={u.id} className="hover:bg-slate-50/70">
+                    <td className="p-3 font-semibold text-slate-900">{u.displayName}</td>
+                    <td className="p-3 font-mono text-slate-600">{u.email}</td>
+                    <td className="p-3">
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-800 uppercase">
+                        {u.role}
+                      </span>
+                    </td>
+                    <td className="p-3">
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                        u.status === 'active' ? 'bg-emerald-50 text-emerald-800' : 'bg-rose-50 text-rose-800'
+                      }`}>
+                        {u.status}
+                      </span>
+                    </td>
+                    <td className="p-3">
+                      {u.id !== currentUser?.id && (
+                        <div className="flex items-center gap-2">
+                          {u.status === 'active' ? (
+                            <button
+                              onClick={() => handleUserStatus(u.id!, 'suspended')}
+                              className="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-lg text-[10px] font-bold transition-colors"
+                            >
+                              Suspend
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => handleUserStatus(u.id!, 'active')}
+                              className="px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-lg text-[10px] font-bold transition-colors"
+                            >
+                              Reactivate
+                            </button>
+                          )}
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 
-      {/* TAB 4: Hostinger Database & System */}
+      {/* TAB 5: Audit Logs */}
+      {activeTab === 'audit' && (
+        <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs space-y-4">
+          <h2 className="text-base font-bold text-navy-950">Security Audit Logs</h2>
+          <p className="text-xs text-slate-500">
+            Immutable tracking records for administrative and privileged user actions.
+          </p>
+
+          <div className="space-y-2">
+            {auditLogs.length > 0 ? (
+              auditLogs.map((log) => (
+                <div key={log.id} className="p-3 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between text-xs">
+                  <div>
+                    <span className="font-bold text-navy-950 uppercase text-[10px] mr-2 px-2 py-0.5 bg-white border border-slate-200 rounded">
+                      {log.action}
+                    </span>
+                    <span className="text-slate-600">
+                      Target: <strong>{log.targetType}:{log.targetId}</strong>
+                    </span>
+                  </div>
+                  <span className="text-[10px] text-slate-400">
+                    {new Date(log.createdAt).toLocaleString()}
+                  </span>
+                </div>
+              ))
+            ) : (
+              <div className="p-8 text-center text-xs text-slate-400">No audit logs recorded yet.</div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* TAB 6: System */}
       {activeTab === 'system' && (
-        <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-xs max-w-3xl space-y-6 text-xs">
+        <div className="bg-white rounded-3xl border border-slate-200 p-8 shadow-xs space-y-6">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center">
               <Database className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="font-bold text-base text-slate-900">Hostinger Persistent Database Status</h3>
-              <p className="text-slate-500">Self-contained database engine configured for Hostinger Cloud/VPS Node.js runtime.</p>
+              <h3 className="font-bold text-base text-slate-900">Hostinger Database & Storage Engine</h3>
+              <p className="text-xs text-slate-500">Configured for Hostinger MySQL and local persistent storage fallback.</p>
             </div>
           </div>
 
-          <div className="space-y-3 pt-2">
-            <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 flex justify-between items-center">
-              <span className="text-slate-600">Storage Engine Mode</span>
-              <span className="font-bold text-slate-900">Hostinger Local Persistent JSON / SQLite Schema</span>
+          <div className="space-y-3 pt-2 text-xs">
+            <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200 flex justify-between items-center">
+              <span className="text-slate-600">Relational Database Engine</span>
+              <span className="font-bold text-slate-900">Hostinger MySQL with Drizzle ORM (schema ready)</span>
             </div>
-            <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 flex justify-between items-center">
+            <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200 flex justify-between items-center">
+              <span className="text-slate-600">Authoritative Categories Count</span>
+              <span className="font-bold text-emerald-700">22 Categories · 189 Subcategories</span>
+            </div>
+            <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200 flex justify-between items-center">
+              <span className="text-slate-600">Dynamic Domain Auto-Indexing</span>
+              <span className="font-bold text-blue-600">Active (Auto-creates unclassified profiles for any domain)</span>
+            </div>
+            <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200 flex justify-between items-center">
               <span className="text-slate-600">External Cloud Lock-In</span>
-              <span className="font-bold text-emerald-700">None (Firebase removed per user instruction)</span>
-            </div>
-            <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 flex justify-between items-center">
-              <span className="text-slate-600">Dynamic Domain Creation</span>
-              <span className="font-bold text-blue-600">Active (Auto-indexes any unlisted domain)</span>
-            </div>
-            <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 flex justify-between items-center">
-              <span className="text-slate-600">Supported Hostinger Runtimes</span>
-              <span className="font-bold text-slate-900">Node.js 20.x, 22.x LTS (via PM2)</span>
+              <span className="font-bold text-emerald-700">0% (Zero Firebase/Firestore dependency)</span>
             </div>
           </div>
         </div>
       )}
-
     </div>
   );
 }

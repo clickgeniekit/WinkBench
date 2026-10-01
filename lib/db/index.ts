@@ -1,11 +1,11 @@
-import { drizzle } from 'drizzle-orm/mysql2';
+import { drizzle, MySql2Database } from 'drizzle-orm/mysql2';
 import mysql from 'mysql2/promise';
 import * as schema from './schema';
 
 export * from './schema';
 
 let pool: mysql.Pool | null = null;
-let dbInstance: ReturnType<typeof drizzle<typeof schema>> | null = null;
+let dbInstance: MySql2Database<typeof schema> | null = null;
 
 export function isDatabaseConfigured(): boolean {
   return Boolean(

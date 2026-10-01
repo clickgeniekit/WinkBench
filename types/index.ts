@@ -1,4 +1,60 @@
-export type UserRole = 'guest' | 'registered' | 'business_owner' | 'moderator' | 'admin';
+export type UserRole = 'guest' | 'user' | 'company_owner' | 'moderator' | 'admin' | 'registered' | 'business_owner';
+
+export interface UserAccount {
+  id: string;
+  email: string;
+  passwordHash: string;
+  displayName: string;
+  role: 'user' | 'company_owner' | 'moderator' | 'admin';
+  avatarUrl?: string;
+  countryCode?: string;
+  isEmailVerified: boolean;
+  status: 'active' | 'suspended' | 'banned';
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface UserSessionRecord {
+  id: string;
+  userId: string;
+  tokenHash: string;
+  ipAddress?: string;
+  userAgent?: string;
+  expiresAt: string;
+  createdAt: string;
+}
+
+export interface InAppNotification {
+  id: string;
+  userId: string;
+  title: string;
+  message: string;
+  link?: string;
+  type: 'review' | 'reply' | 'claim' | 'moderation' | 'system';
+  isRead: boolean;
+  createdAt: string;
+}
+
+export interface ReviewReport {
+  id: string;
+  reviewId: string;
+  reporterUserId: string;
+  reason: string;
+  notes?: string;
+  status: 'open' | 'investigating' | 'resolved' | 'dismissed';
+  createdAt: string;
+}
+
+export interface AuditLogEntry {
+  id: string;
+  actorUserId: string;
+  action: string;
+  targetType: string;
+  targetId: string;
+  detailsJson?: string;
+  ipAddress?: string;
+  createdAt: string;
+}
 
 export interface UserProfile {
   id: string;

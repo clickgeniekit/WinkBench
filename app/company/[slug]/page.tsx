@@ -26,6 +26,7 @@ import StarRating from '@/components/StarRating';
 import TrustBadge from '@/components/TrustBadge';
 import ReviewCard from '@/components/ReviewCard';
 import { normalizeDomain } from '@/lib/utils/domain';
+import { Company, Review, CompanyUpdate } from '@/types';
 
 export default function CompanyProfilePage() {
   const params = useParams();
@@ -36,47 +37,63 @@ export default function CompanyProfilePage() {
     return createDefaultCompany(slug || 'winkbench.com');
   }, [slug]);
 
+  const initialReviews = useMemo(() => {
+    return DEMO_REVIEWS.filter(
+      (r) => r.companySlug === slug || r.companyId === company.id
+    );
+  }, [slug, company.id]);
+
+  const initialAnnouncements = useMemo(() => {
+    return DEMO_UPDATES.filter((u) => u.companyId === company.id);
+  }, [company.id]);
+
   const [activeTab, setActiveTab] = useState<'reviews' | 'announcements' | 'blog' | 'details'>('reviews');
   const [filterRating, setFilterRating] = useState<number | null>(null);
   const [copiedLink, setCopiedLink] = useState(false);
 
-  // Reviews, announcements, and articles from storage / demo
-  const companyReviews = useMemo(() => {
-    const norm = normalizeDomain(company.slug);
-    return DEMO_REVIEWS.filter(r => r.companySlug === company.slug || normalizeDomain(r.companySlug) === norm);
-  }, [company.slug]);
+  // Live state loaded from database API
+  const [liveCompany, setLiveCompany] = useState<Company>(company);
+  const [liveReviews, setLiveReviews] = useState<Review[]>(initialReviews);
+  const [liveAnnouncements, setLiveAnnouncements] = useState<CompanyUpdate[]>(initialAnnouncements);
+  const [liveArticles, setLiveArticles] = useState<any[]>([]);
 
-  const companyAnnouncements = useMemo(() => {
-    return [
-      {
-        id: 'ann-1',
-        title: 'EUR and CAD local domestic clearing rails activated',
-        content: 'We are pleased to announce direct domestic bank clearing for all merchant accounts operating across the United Kingdom, Canada, and European Union.',
-        publishedAt: '2026-09-20T10:00:00Z',
-        priority: 'important',
-      }
-    ];
-  }, []);
+  // Report review modal state
+  const [reportingReviewId, setReportingReviewId] = useState<string | null>(null);
+  const [reportReason, setReportReason] = useState('Spam or promotional content');
+  const [reportNotes, setReportNotes] = useState('');
+  const [reportSubmitted, setReportSubmitted] = useState(false);
 
-  const companyArticles = useMemo(() => {
-    return [
-      {
-        id: 'art-1',
-        title: 'How Mid-Market Retailers Can Reduce Friendly Fraud and Chargebacks',
-        summary: 'An operational blueprint for multi-currency fraud defense and 3D-Secure 2.2 optimization.',
-        content: 'Chargeback prevention starts with crystal-clear billing descriptors, instant automated refund portals, and pre-arbitration webhook notifications...',
-        publishedAt: '2026-09-10T12:00:00Z',
-        authorName: 'Marcus Vance, Head of Risk',
-        category: 'Fintech & Risk Management',
+  React.useEffect(() => {
+    setLiveCompany(company);
+    setLiveReviews(initialReviews);
+    setLiveAnnouncements(initialAnnouncements);
+  }, [company, initialReviews, initialAnnouncements]);
+
+  React.useEffect(() => {
+    async function loadLiveData() {
+      try {
+        const res = await fetch(`/api/companies/${slug}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.company) setLiveCompany(data.company);
+          if (data.reviews) setLiveReviews(data.reviews);
+          if (data.announcements) setLiveAnnouncements(data.announcements);
+          if (data.articles) setLiveArticles(data.articles);
+        }
+      } catch (err) {
+        console.error('Error fetching live company data:', err);
       }
-    ];
-  }, []);
+    }
+    if (slug) {
+      loadLiveData();
+    }
+  }, [slug]);
 
   // Filtered reviews
   const displayedReviews = useMemo(() => {
-    if (filterRating === null) return companyReviews;
-    return companyReviews.filter((r) => r.rating === filterRating);
-  }, [companyReviews, filterRating]);
+    if (filterRating === null) return liveReviews;
+    return liveReviews.filter((r) => r.rating === filterRating);
+  }, [liveReviews, filterRating]);
 
   const handleShare = () => {
     navigator.clipboard?.writeText(window.location.href);
@@ -84,7 +101,33 @@ export default function CompanyProfilePage() {
     setTimeout(() => setCopiedLink(false), 2500);
   };
 
-  const totalRatingsCount = Object.values(company.ratingDistribution).reduce((a, b) => a + b, 0) || company.reviewCount;
+  const handleReportReview = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!reportingReviewId) return;
+
+    try {
+      await fetch('/api/reviews/report', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          reviewId: reportingReviewId,
+          reason: reportReason,
+          notes: reportNotes,
+        }),
+      });
+      setReportSubmitted(true);
+      setTimeout(() => {
+        setReportSubmitted(false);
+        setReportingReviewId(null);
+        setReportNotes('');
+      }, 2000);
+    } catch (err) {
+      console.error('Failed to submit report:', err);
+    }
+  };
+
+  const totalRatingsCount =
+    Object.values(liveCompany.ratingDistribution || {}).reduce((a, b) => a + b, 0) || liveCompany.reviewCount;
 
   return (
     <div className="bg-slate-50 min-h-screen pb-20">
@@ -265,7 +308,7 @@ export default function CompanyProfilePage() {
             }`}
           >
             <MessageSquare className="w-4 h-4" />
-            1. Reviews ({companyReviews.length})
+            1. Reviews ({liveReviews.length})
           </button>
 
           <button
@@ -277,7 +320,7 @@ export default function CompanyProfilePage() {
             }`}
           >
             <Bell className="w-4 h-4" />
-            2. Company Announcement ({companyAnnouncements.length})
+            2. Company Announcement ({liveAnnouncements.length})
           </button>
 
           <button
@@ -289,7 +332,7 @@ export default function CompanyProfilePage() {
             }`}
           >
             <FileText className="w-4 h-4" />
-            3. Company Blog ({companyArticles.length})
+            3. Company Blog ({liveArticles.length})
           </button>
 
           <button
@@ -332,7 +375,7 @@ export default function CompanyProfilePage() {
               {/* Reviews List */}
               <div className="space-y-4">
                 {displayedReviews.length > 0 ? (
-                  displayedReviews.map((review) => (
+                  displayedReviews.map((review: Review) => (
                     <ReviewCard key={review.id} review={review} />
                   ))
                 ) : (
@@ -404,9 +447,9 @@ export default function CompanyProfilePage() {
             <h2 className="text-xl font-bold text-slate-900">Official Company Announcements</h2>
             <p className="text-xs text-slate-500">Updates and notices published directly by the verified company management.</p>
 
-            {companyAnnouncements.length > 0 ? (
+            {liveAnnouncements.length > 0 ? (
               <div className="space-y-4 pt-2">
-                {companyAnnouncements.map((ann) => (
+                {liveAnnouncements.map((ann: any) => (
                   <div key={ann.id} className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-2">
                     <div className="flex items-center justify-between text-xs">
                       <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
@@ -435,13 +478,13 @@ export default function CompanyProfilePage() {
             <h2 className="text-xl font-bold text-slate-900">Company Blog & Insights</h2>
             <p className="text-xs text-slate-500">Educational articles and updates published by {company.name}.</p>
 
-            {companyArticles.length > 0 ? (
+            {liveArticles.length > 0 ? (
               <div className="space-y-4 pt-2">
-                {companyArticles.map((art) => (
+                {liveArticles.map((art: any) => (
                   <article key={art.id} className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-3">
                     <div className="flex items-center justify-between text-xs">
                       <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
-                        {art.category}
+                        {art.category || 'Article'}
                       </span>
                       <span className="text-slate-400">{new Date(art.publishedAt).toLocaleDateString()}</span>
                     </div>

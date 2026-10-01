@@ -1,7 +1,7 @@
 // Pure domain normalization and detection utility functions
 // Safe for both client and server components
 
-export function normalizeDomain(input: string): string {
+export function normalizeDomain(input: string, keepWww = false): string {
   if (!input) return '';
   let cleaned = input.trim().toLowerCase();
 
@@ -25,6 +25,11 @@ export function normalizeDomain(input: string): string {
   const portIndex = cleaned.indexOf(':');
   if (portIndex !== -1) {
     cleaned = cleaned.substring(0, portIndex);
+  }
+
+  // Strip www. prefix to ensure canonical domain matching (e.g. www.example.com -> example.com)
+  if (!keepWww) {
+    cleaned = cleaned.replace(/^www\./i, '');
   }
 
   return cleaned;
